@@ -8,7 +8,7 @@ import com.ssafy.dto.request.LoginRequestDto;
 import com.ssafy.dto.request.SignupRequestDto;
 import com.ssafy.dto.response.LoginResponseDto;
 import com.ssafy.entity.User;
-import com.ssafy.mapper.UserMapper;
+import com.ssafy.mapper.AuthMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserMapper userMapper;
+    private final AuthMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
