@@ -13,4 +13,9 @@
         FROM users
         WHERE username = #{username}
     </select>
+    
+    <insert id="insertUser" parameterType="com.ssafy.entity.User">
+	    INSERT INTO users (username, password, email, name, profile_image)
+	    VALUES (#{username}, #{password}, #{email}, #{name}, #{profileImage})
+	</insert>
 </mapper>
