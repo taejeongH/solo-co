@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.ssafy.entity.User;
 
 @Mapper
-public interface UserMapper {
+public interface AuthMapper {
     User findByUsername(String username);
     int insertUser(User user);
 }
