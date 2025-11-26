@@ -14,7 +14,7 @@ import com.ssafy.authentication.JwtTokenProvider;
 import com.ssafy.dto.request.LoginRequestDto;
 import com.ssafy.dto.request.SignupRequestDto;
 import com.ssafy.dto.response.LoginResponseDto;
-import com.ssafy.service.UserService;
+import com.ssafy.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService userService;
     private final JwtTokenProvider jwtTokenProvider;
     
 
