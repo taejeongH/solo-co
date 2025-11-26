@@ -16,11 +16,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
-                        .anyRequest().authenticated()
-                );
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                        "/", 
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/api-docs/**",
+                        "/webjars/**",
+                        "/error",        // 에러 페이지
+                        "/favicon.ico",  // 아이콘
+                        "/css/**",
+                        "/js/**",
+                        "/images/**"
+                ).permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
+                .anyRequest().authenticated()
+            );
 
         return http.build();
     }
