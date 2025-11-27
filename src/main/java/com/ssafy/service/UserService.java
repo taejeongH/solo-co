@@ -22,6 +22,7 @@ public class UserService {
     public UserResponseDto updateUser(String token, UserUpdateRequestDto dto) {
 
         // 1. 토큰에서 userId 추출
+    	System.out.println(token);
         Long userId = jwtTokenProvider.getUserIdFromToken(token);
 
         // 2. 기존 데이터 조회
