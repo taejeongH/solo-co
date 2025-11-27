@@ -31,7 +31,7 @@ public class SecurityConfig {
                         "/js/**",
                         "/images/**"
                 ).permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/users").permitAll()
                 .anyRequest().authenticated()
             );
 
