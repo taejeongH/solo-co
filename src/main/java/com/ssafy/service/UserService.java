@@ -43,16 +43,16 @@ public class UserService {
         }
 
         // 4. DB Update
-        userMapper.updateUser(userId, nickname, profile, password);
+        userMapper.updateUser(userId, nickname, profile, password, email);
 
         // 5. 응답 DTO 구성
         User updated = userMapper.findById(userId);
 
         UserResponseDto response = new UserResponseDto();
-        response.setId(updated.getUserId());
+        response.setUserId(updated.getUserId());
         response.setEmail(updated.getEmail());
-        response.setNickname(updated.getName());
-        response.setProfile(updated.getProfileImage());
+        response.setName(updated.getName());
+        response.setProfileImage(updated.getProfileImage());
 
         return response;
     }

@@ -10,9 +10,10 @@ public interface UserMapper {
     User findById(Long id);
 
     int updateUser(
-            @Param("id") Long id,
-            @Param("nickname") String nickname,
-            @Param("profile") String profile,
-            @Param("password") String password
+        Long userId,
+        String name,
+        String profileImage,
+        String password,
+        String email
     );
 }
