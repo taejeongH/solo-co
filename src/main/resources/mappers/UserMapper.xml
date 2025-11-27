@@ -7,20 +7,20 @@
 
     <!-- 회원 조회 -->
     <select id="findById" resultType="com.ssafy.entity.User">
-        SELECT id, email, password, nickname, profile
+        SELECT user_id as userid, username, password, email, name, profile_image as profileImage
         FROM users
-        WHERE id = #{id}
+        WHERE user_id = #{userId}
     </select>
 
     <!-- 회원 수정 -->
     <update id="updateUser">
         UPDATE users
         SET 
-            nickname = #{nickname},
-            profile = #{profile},
-            password = #{password}
+        	name = #{name},
+            profile_image = #{profileImage},
+            password = #{password},
             email = #{email}
-        WHERE id = #{id}
+        WHERE user_id = #{userId}
     </update>
 
 </mapper>
