@@ -4,7 +4,7 @@
 
     <select id="findByUsername" parameterType="string" resultType="com.ssafy.entity.User">
         SELECT
-            user_id,
+            user_id as userid,
             username,
             password,
             email,
