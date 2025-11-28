@@ -14,10 +14,8 @@ import java.util.List;
 public class TravelProjectService {
 
     private final TravelProjectMapper projectMapper;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public List<TravelProjectResponseDto> getMyProjects(String token) {
-        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+    public List<TravelProjectResponseDto> getMyProjects(Long userId) {
         return projectMapper.findProjectsByUserId(userId);
     }
 }

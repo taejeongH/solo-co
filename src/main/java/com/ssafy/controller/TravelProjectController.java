@@ -1,15 +1,19 @@
 package com.ssafy.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.ssafy.dto.response.TravelProjectResponseDto;
 import com.ssafy.service.TravelProjectService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,12 +28,13 @@ public class TravelProjectController {
             security = @SecurityRequirement(name = "JWT Auth")
     )
     @GetMapping
-    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(
-            @RequestHeader("Authorization") String authorizationHeader
-    ) {
-        String token = authorizationHeader.replace("Bearer ", "");
+    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects() {
+        Long userId = (Long) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-        List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(token);
+        List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(userId);
 
         return ResponseEntity.ok(projects);
     }
