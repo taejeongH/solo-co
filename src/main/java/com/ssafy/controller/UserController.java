@@ -34,4 +34,18 @@ public class UserController {
         UserResponseDto response = userService.updateUser(token, dto);
         return ResponseEntity.ok(response);
     }
+    @Operation(
+            summary = "회원 정보 삭제",
+            description = "로그인한 사용자 회원 정보 삭제.",
+            security = @SecurityRequirement(name = "JWT Auth")
+    )
+    @DeleteMapping
+    public ResponseEntity<String> deleteUser(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        String token = authorizationHeader.replace("Bearer ", "").trim();
+        userService.deleteUser(token);
+        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+    }
+
 }

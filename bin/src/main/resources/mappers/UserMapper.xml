@@ -22,11 +22,5 @@
             email = #{email}
         WHERE user_id = #{userId}
     </update>
-    
-    <!-- 회원 삭제 -->
-    <delete id="deleteUser" parameterType="long">
-	    DELETE FROM users
-	    WHERE user_id = #{userId}
-	</delete>
 
 </mapper>
