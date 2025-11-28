@@ -13,4 +13,5 @@ public class TravelProject {
     private String endDate;
     private String thumbnail;
     private String createdAt;
+    private String status;
 }

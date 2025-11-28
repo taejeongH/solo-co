@@ -5,18 +5,24 @@
 
 <mapper namespace="com.ssafy.mapper.TravelProjectMapper">
 
-    <select id="findProjectsByUserId" resultType="com.ssafy.dto.response.TravelProjectResponseDto">
-        SELECT 
-            tp.project_id AS projectId,
-            tp.project_type AS projectType,
-            tp.title AS title,
-            tp.location AS location,
-            tp.start_date AS startDate,
-            tp.end_date AS endDate,
-            tp.thumbnail AS thumbnail
-        FROM travel_project tp
-        WHERE tp.owner_id = #{userId}
-        ORDER BY tp.start_date DESC
-    </select>
+    <select id="findProjectsByUserId" resultType="com.ssafy.entity.TravelProject">
+	    SELECT
+	        tp.project_id   AS projectId,
+	        tp.owner_id     AS ownerId,
+	        tp.title        AS title,
+	        tp.location     AS location,
+	        tp.start_date   AS startDate,
+	        tp.end_date     AS endDate,
+	        tp.project_type AS projectType,
+	        tp.created_at   AS createdAt,
+	        tp.thumbnail    AS thumbnail
+	    FROM travel_project tp
+	    LEFT JOIN project_member pm ON tp.project_id = pm.project_id
+	    WHERE pm.user_id = #{userId}
+	</select>
+
+    
+    
+
 
 </mapper>
