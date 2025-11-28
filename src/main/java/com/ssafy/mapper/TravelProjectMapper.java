@@ -10,4 +10,5 @@ import com.ssafy.entity.TravelProject;
 public interface TravelProjectMapper {
 
     List<TravelProject> findProjectsByUserId(Long userId);
+    void createProject(TravelProject project);
 }

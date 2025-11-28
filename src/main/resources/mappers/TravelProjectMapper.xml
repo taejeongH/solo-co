@@ -20,6 +20,14 @@
 	    LEFT JOIN project_member pm ON tp.project_id = pm.project_id
 	    WHERE pm.user_id = #{userId}
 	</select>
+	
+	<insert id="createProject" useGeneratedKeys="true" keyProperty="projectId">
+	    INSERT INTO travel_project
+	    (owner_id, title, location, start_date, end_date, project_type, thumbnail)
+	    VALUES
+	    (#{ownerId}, #{title}, #{location}, #{startDate}, #{endDate}, #{projectType}, #{thumbnail})
+	</insert>
+	
 
     
     
