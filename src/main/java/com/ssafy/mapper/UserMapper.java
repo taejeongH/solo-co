@@ -16,4 +16,6 @@ public interface UserMapper {
         String password,
         String email
     );
+    
+    void deleteUser(Long userId);
 }
