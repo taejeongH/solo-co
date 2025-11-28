@@ -2,9 +2,10 @@ use soloco;
 
 INSERT INTO users (username, password, email, name, profile_image)
 VALUES 
-('taejeong', 'pass1', 'tae@test.com', '허태정', '/img/p1.png'),
-('jisun', 'pass2', 'jisun@test.com', '윤지선', '/img/p2.png'),
-('jaehyung', 'pass3', 'jae@test.com', '박재형', '/img/p3.png');
+('taejeong', '$2a$10$ZtTs/W5s1HGda3DdBF2bzeUw42i.McDHoa6pV.teGNQcqfJqhAtcu', 'tae@test.com', '허태정', '/img/p1.png'),
+('jisun', '$2a$10$ZtTs/W5s1HGda3DdBF2bzeUw42i.McDHoa6pV.teGNQcqfJqhAtcu', 'jisun@test.com', '윤지선', '/img/p2.png'),
+('jaehyung', '$2a$10$ZtTs/W5s1HGda3DdBF2bzeUw42i.McDHoa6pV.teGNQcqfJqhAtcu', 'jae@test.com', '박재형', '/img/p3.png');
+-- password : pass1
 
 INSERT INTO travel_project (owner_id, title, location, start_date, end_date, project_type, thumbnail)
 VALUES
