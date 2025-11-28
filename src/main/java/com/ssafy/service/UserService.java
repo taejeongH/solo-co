@@ -56,4 +56,17 @@ public class UserService {
 
         return response;
     }
+    
+    public void deleteUser(String token) {
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        userMapper.deleteUser(userId);
+    }
+
 }
