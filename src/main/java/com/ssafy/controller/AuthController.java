@@ -38,18 +38,5 @@ public class AuthController {
         userService.signup(dto);
         return ResponseEntity.ok("회원가입 성공");
     }
-    
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
-    	System.out.println("test");
-        token = token.replace("Bearer ", "");
-
-        if (!jwtTokenProvider.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("잘못된 토큰입니다.");
-        }
-
-        return ResponseEntity.ok("로그아웃 완료");
-    }
 }
 

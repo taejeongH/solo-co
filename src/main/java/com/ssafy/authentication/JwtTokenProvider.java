@@ -20,8 +20,9 @@ public class JwtTokenProvider {
         Date now = new Date();
 
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))   
-                .claim("email", email)               
+                .setSubject(email) // subject = 식별용 이메일로 변경
+                .claim("userId", userId)  // PK는 claim으로
+                .claim("email", email)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + EXPIRATION))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -41,13 +42,13 @@ public class JwtTokenProvider {
     }
 
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
+    	Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return Long.parseLong(claims.getSubject());
+        return claims.get("userId", Long.class);
     }
 
     public String getEmailFromToken(String token) {

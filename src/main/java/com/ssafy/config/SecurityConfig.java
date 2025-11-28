@@ -7,10 +7,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.ssafy.filter.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -25,15 +33,18 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/api-docs/**",
                         "/webjars/**",
-                        "/error",        // 에러 페이지
-                        "/favicon.ico",  // 아이콘
+                        "/error",
+                        "/favicon.ico",
                         "/css/**",
                         "/js/**",
                         "/images/**"
                 ).permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/users").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
+                .requestMatchers("/api/travels/**").authenticated()  // 여행 조회/생성/수정/삭제 인증 필요
+                .requestMatchers("/api/users/**").authenticated()    // 유저 관련 기능
                 .anyRequest().authenticated()
-            );
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
