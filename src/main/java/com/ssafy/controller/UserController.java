@@ -1,14 +1,22 @@
 package com.ssafy.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.ssafy.dto.request.UserUpdateRequestDto;
+import com.ssafy.dto.response.UserInfoResponseDto;
 import com.ssafy.dto.response.UserResponseDto;
 import com.ssafy.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +42,8 @@ public class UserController {
         UserResponseDto response = userService.updateUser(token, dto);
         return ResponseEntity.ok(response);
     }
+    
+    
     @Operation(
             summary = "회원 정보 삭제",
             description = "로그인한 사용자 회원 정보 삭제.",
@@ -47,5 +57,21 @@ public class UserController {
         userService.deleteUser(token);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
+    
+    
+    @Operation(
+            summary = "회원 정보 조회",
+            description = "로그인한 사용자 회원 정보 조회.",
+            security = @SecurityRequirement(name = "JWT Auth")
+    )
+    @GetMapping
+    public ResponseEntity<UserInfoResponseDto> getMyInfo(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        String token = authorizationHeader.replace("Bearer ", "").trim();
+        UserInfoResponseDto response = userService.getMyInfo(token);
+        return ResponseEntity.ok(response);
+    }
+
 
 }
