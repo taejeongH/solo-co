@@ -1,12 +1,14 @@
 package com.ssafy.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.ssafy.dto.request.TravelProjectCreateRequestDto;
 import com.ssafy.dto.response.TravelProjectResponseDto;
 import com.ssafy.entity.TravelProject;
 import com.ssafy.mapper.TravelProjectMapper;
@@ -18,6 +20,14 @@ import lombok.RequiredArgsConstructor;
 public class TravelProjectService {
 
     private final TravelProjectMapper projectMapper;
+    
+    public String calStatus (LocalDate start, LocalDate end) {
+    	LocalDate today = LocalDate.now();
+    	
+    	if(today.isBefore(start)) return "UPCOMING";
+    	else if(!today.isAfter(end)) return "IN_PROGRESS";
+    	else return "DONE";
+    }
 
     public List<TravelProjectResponseDto> getMyProjects(Long userId) {
 
@@ -25,12 +35,12 @@ public class TravelProjectService {
         List<TravelProjectResponseDto> result = new ArrayList<>();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate today = LocalDate.now();
 
         for (TravelProject p : projects) {
         	System.out.println(p.toString());
             LocalDate start = LocalDate.parse(p.getStartDate(), formatter);
             LocalDate end = LocalDate.parse(p.getEndDate(), formatter);
+            String status = calStatus(start, end);
 
             TravelProjectResponseDto dto = new TravelProjectResponseDto();
             dto.setProjectId(p.getProjectId());
@@ -40,19 +50,46 @@ public class TravelProjectService {
             dto.setThumbnail(p.getThumbnail());
             dto.setLocation(p.getLocation());
             dto.setProjectType(p.getProjectType());
-
-            if (today.isBefore(start)) {
-                dto.setStatus("UPCOMING");  // 예정
-            } else if (!today.isAfter(end)) {
-                dto.setStatus("IN_PROGRESS"); // 진행중
-            } else {
-                dto.setStatus("DONE"); // 종료
-            }
-
+            dto.setStatus(status);
+            
             result.add(dto);
         }
-
         return result;
     }
+    
+    public TravelProjectResponseDto createProject(Long userId,
+            TravelProjectCreateRequestDto req) {
+
+		// TravelProject 도메인 생성
+		TravelProject project = new TravelProject();
+		project.setOwnerId(userId);
+		project.setTitle(req.getTitle());
+		project.setLocation(req.getLocation());
+		project.setStartDate(req.getStartDate());
+		project.setEndDate(req.getEndDate());
+		project.setProjectType(req.getProjectType());
+		project.setThumbnail(req.getThumbnail());
+		
+		// DB 저장 (projectId 자동 세팅됨)
+		projectMapper.createProject(project);
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate start = LocalDate.parse(project.getStartDate(), formatter);
+        LocalDate end = LocalDate.parse(project.getEndDate(), formatter);
+        String status = calStatus(start, end);
+		
+		// 응답 DTO 생성
+		TravelProjectResponseDto res = new TravelProjectResponseDto();
+		res.setProjectId(project.getProjectId());
+		res.setTitle(project.getTitle());
+		res.setLocation(project.getLocation());
+		res.setStartDate(project.getStartDate());
+		res.setEndDate(project.getEndDate());
+		res.setProjectType(project.getProjectType());
+		res.setThumbnail(project.getThumbnail());
+        res.setStatus(status);
+		
+		return res;
+	}
 
 }

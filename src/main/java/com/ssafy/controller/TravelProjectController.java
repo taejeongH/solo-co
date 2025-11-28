@@ -5,9 +5,12 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.dto.request.TravelProjectCreateRequestDto;
 import com.ssafy.dto.response.TravelProjectResponseDto;
 import com.ssafy.service.TravelProjectService;
 
@@ -38,4 +41,19 @@ public class TravelProjectController {
 
         return ResponseEntity.ok(projects);
     }
+    
+    @PostMapping
+    @Operation(summary = "여행 프로젝트 생성", security = @SecurityRequirement(name = "JWT Auth"))
+    public ResponseEntity<TravelProjectResponseDto> createProject(@RequestBody TravelProjectCreateRequestDto requestDto) {
+    	Long userId = (Long) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        TravelProjectResponseDto result =
+                travelProjectService.createProject(userId, requestDto);
+
+        return ResponseEntity.status(201).body(result);
+    }
+
 }
