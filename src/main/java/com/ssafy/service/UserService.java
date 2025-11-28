@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.authentication.JwtTokenProvider;
 import com.ssafy.dto.request.UserUpdateRequestDto;
+import com.ssafy.dto.response.UserInfoResponseDto;
 import com.ssafy.dto.response.UserResponseDto;
 import com.ssafy.entity.User;
 import com.ssafy.mapper.UserMapper;
@@ -68,5 +69,23 @@ public class UserService {
 
         userMapper.deleteUser(userId);
     }
+    
+    public UserInfoResponseDto getMyInfo(String token) {
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        UserInfoResponseDto dto = new UserInfoResponseDto();
+        dto.setId(user.getUsername());      // 예시에서 id = username
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setProfileImage(user.getProfileImage());
+
+        return dto;
+    }
+
 
 }
