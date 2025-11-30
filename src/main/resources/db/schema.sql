@@ -19,7 +19,7 @@ CREATE TABLE travel_project (
     end_date DATE NOT NULL,
     project_type ENUM('PERSONAL', 'GROUP') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
+	thumbnail VARCHAR(200),
     FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
