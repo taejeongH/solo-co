@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.mapper.TravelProjectPlaceMapper">
+
+    <insert id="insertPlace">
+        INSERT INTO project_place
+        (project_id, place_name, place_address, latitude, longitude)
+        VALUES
+        (#{projectId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude})
+    </insert>
+
+    <select id="findByProjectId" resultType="com.ssafy.entity.TravelProjectPlace">
+        SELECT project_id as projectId,
+        	   place_id as placeId,
+        	   place_name as placeName, 
+        	   place_address as placeAddress, 
+        	   latitude, 
+        	   longitude
+        FROM project_place
+        WHERE project_id = #{projectId}
+    </select>
+    
+    <delete id="deletePlace">
+    	DELETE from project_place 
+    	WHERE place_id=#{placeId} and project_id=#{projectId}
+    </delete>
+
+</mapper>
