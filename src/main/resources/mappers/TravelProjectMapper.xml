@@ -3,9 +3,9 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.ssafy.mapper.TravelProjectMapper">
+<mapper namespace="com.ssafy.travel.project.mapper.TravelProjectMapper">
 
-    <select id="findProjectsByUserId" resultType="com.ssafy.entity.TravelProject">
+    <select id="findProjectsByUserId" resultType="com.ssafy.travel.project.entity.TravelProject">
 	    SELECT
 	        tp.project_id   AS projectId,
 	        tp.owner_id     AS ownerId,
@@ -29,7 +29,7 @@
 	</insert>
 	
 
-    <select id="findById" parameterType="long" resultType="com.ssafy.entity.TravelProject">
+    <select id="findById" parameterType="long" resultType="com.ssafy.travel.project.entity.TravelProject">
         SELECT
 	        tp.project_id   AS projectId,
 	        tp.owner_id     AS ownerId,
