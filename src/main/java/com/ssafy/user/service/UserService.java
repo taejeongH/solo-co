@@ -1,0 +1,75 @@
+package com.ssafy.user.service;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.ssafy.auth.entity.User;
+import com.ssafy.global.jwt.JwtTokenProvider;
+import com.ssafy.user.dto.UserInfoResponseDto;
+import com.ssafy.user.dto.UserResponseDto;
+import com.ssafy.user.dto.UserUpdateRequestDto;
+import com.ssafy.user.mapper.UserMapper;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto dto) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        String nickname = dto.getName() != null ? dto.getName() : user.getName();
+        String email = dto.getEmail() != null ? dto.getEmail() : user.getEmail();
+        String profile = dto.getProfileImage() != null ? dto.getProfileImage() : user.getProfileImage();
+
+        String password = user.getPassword();
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            password = passwordEncoder.encode(dto.getPassword());
+        }
+
+        userMapper.updateUser(userId, nickname, profile, password, email);
+
+        User updated = userMapper.findById(userId);
+
+        UserResponseDto response = new UserResponseDto();
+        response.setUserId(updated.getUserId());
+        response.setEmail(updated.getEmail());
+        response.setName(updated.getName());
+        response.setProfileImage(updated.getProfileImage());
+
+        return response;
+    }
+    
+    public void deleteUser(Long userId) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        userMapper.deleteUser(userId);
+    }
+    
+    public UserInfoResponseDto getMyInfo(Long userId) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        UserInfoResponseDto dto = new UserInfoResponseDto();
+        dto.setId(user.getUsername());      // 예시에서 id = username
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setProfileImage(user.getProfileImage());
+
+        return dto;
+    }
+
+
+}

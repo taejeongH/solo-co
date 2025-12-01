@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.ssafy.mapper.TravelProjectPlaceMapper">
+<mapper namespace="com.ssafy.travel.place.mapper.TravelProjectPlaceMapper">
 
     <insert id="insertPlace">
         INSERT INTO project_place
@@ -11,7 +11,7 @@
         (#{projectId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude})
     </insert>
 
-    <select id="findByProjectId" resultType="com.ssafy.entity.TravelProjectPlace">
+    <select id="findByProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
         SELECT project_id as projectId,
         	   place_id as placeId,
         	   place_name as placeName, 

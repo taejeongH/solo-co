@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.ssafy.mapper.TravelItineraryMapper">
+<mapper namespace="com.ssafy.travel.itinerary.mapper.TravelItineraryMapper">
 
 	<delete id="deleteByProjectId">
 	    DELETE FROM project_itinerary WHERE project_id = #{projectId}
