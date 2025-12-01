@@ -1,14 +1,17 @@
 package com.ssafy.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ssafy.dto.request.TravelProjectPlaceRequestDto;
 import com.ssafy.dto.request.TravelProjectCreateRequestDto;
+import com.ssafy.dto.response.AutoGenerateResponse;
+import com.ssafy.dto.response.ItineraryCandidateResponse;
 import com.ssafy.dto.response.TravelProjectResponseDto;
 import com.ssafy.entity.TravelProject;
 import com.ssafy.mapper.TravelProjectMapper;
@@ -91,5 +94,5 @@ public class TravelProjectService {
 		
 		return res;
 	}
-
+    
 }
