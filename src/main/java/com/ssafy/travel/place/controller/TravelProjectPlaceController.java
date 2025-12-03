@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ssafy.travel.place.entity.TravelProjectPlace;
+import com.ssafy.travel.place.dto.TravelProjectPlaceRequestDto;
 import com.ssafy.travel.place.service.TravelProjectPlaceService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +28,7 @@ public class TravelProjectPlaceController {
     @Operation(summary = "여행 장소 추가", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> addPlace(
             @PathVariable Long projectId,
-            @RequestBody TravelProjectPlace place) {
+            @RequestBody TravelProjectPlaceRequestDto place) {
 
         placeService.addPlace(projectId, place);
         return ResponseEntity.ok("장소 추가 완료");
