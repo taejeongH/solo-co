@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.global.service.S3Service;
-import com.ssafy.travel.project.dto.TravelProjectCreateRequestDto;
+import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
@@ -61,7 +62,7 @@ public class TravelProjectService {
     }
     
     public TravelProjectResponseDto createProject(Long userId,
-            TravelProjectCreateRequestDto req, MultipartFile file) throws IOException {
+            TravelProjectRequestDto req, MultipartFile file) throws IOException {
     	String imageUrl = null;
     	if (file != null && !file.isEmpty()) {
             imageUrl = s3service.upload(file, "profile");
@@ -98,5 +99,54 @@ public class TravelProjectService {
 		
 		return res;
 	}
+    
+    @Transactional
+    public TravelProjectResponseDto updateProject(
+            Long projectId,
+            Long userId,
+            TravelProjectRequestDto dto,
+            MultipartFile file
+    ) throws IOException {
+
+        // 1. 기존 프로젝트 조회
+        TravelProject project = projectMapper.findById(projectId);
+        if (project == null) {
+            throw new IllegalArgumentException("프로젝트가 존재하지 않습니다.");
+        }
+
+        // 2. 권한 체크
+        if (!project.getOwnerId().equals(userId)) {
+            throw new IllegalArgumentException("프로젝트 수정 권한이 없습니다.");
+        }
+
+        // 3. 새로운 썸네일 파일 업로드
+        String thumbnailUrl = project.getThumbnail();
+        if (file != null && !file.isEmpty()) {
+            thumbnailUrl = s3service.upload(file, "project");
+        }
+
+        // 4. DB 업데이트
+        project.setTitle(dto.getTitle());
+        project.setLocation(dto.getLocation());
+        project.setStartDate(dto.getStartDate());
+        project.setEndDate(dto.getEndDate());
+        project.setProjectType(dto.getProjectType());
+        project.setThumbnail(thumbnailUrl);
+
+        projectMapper.update(project);
+
+        // 5. Response 생성
+        TravelProjectResponseDto res = new TravelProjectResponseDto();
+        res.setProjectId(project.getProjectId());
+        res.setTitle(project.getTitle());
+        res.setLocation(project.getLocation());
+        res.setStartDate(project.getStartDate());
+        res.setEndDate(project.getEndDate());
+        res.setProjectType(project.getProjectType());
+        res.setThumbnail(project.getThumbnail());
+        res.setStatus(project.getStatus());
+
+        return res;
+    }
     
 }

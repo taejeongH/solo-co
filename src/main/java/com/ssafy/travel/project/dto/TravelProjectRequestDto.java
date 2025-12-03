@@ -3,7 +3,7 @@ package com.ssafy.travel.project.dto;
 import lombok.Data;
 
 @Data
-public class TravelProjectCreateRequestDto {
+public class TravelProjectRequestDto {
     private String title;
     private String location;
     private String startDate;   // "yyyy-MM-dd"

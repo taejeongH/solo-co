@@ -44,6 +44,16 @@
         WHERE project_id = #{projectId}
     </select>
     
-
+	<update id="update" parameterType="com.ssafy.travel.project.entity.TravelProject">
+	    UPDATE travel_project
+	    SET 
+	        title = #{title},
+	        location = #{location},
+	        start_date = #{startDate},
+	        end_date = #{endDate},
+	        project_type = #{projectType},
+	        thumbnail = #{thumbnail}
+	    WHERE project_id = #{projectId};
+	</update>
 
 </mapper>

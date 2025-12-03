@@ -1,5 +1,6 @@
 package com.ssafy.travel.project.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data

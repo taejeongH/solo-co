@@ -13,4 +13,5 @@ public interface TravelProjectMapper {
 	TravelProject findById(@Param("projectId") Long projectId);
     List<TravelProject> findProjectsByUserId(Long userId);
     void createProject(TravelProject project);
+    void update(TravelProject project);
 }
