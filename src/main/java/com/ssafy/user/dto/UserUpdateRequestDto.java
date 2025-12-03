@@ -1,6 +1,7 @@
 package com.ssafy.user.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,5 @@ public class UserUpdateRequestDto {
 
     private String name;
     private String password;
-    private String profileImage;
     private String email;
 }

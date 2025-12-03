@@ -24,18 +24,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService userService;
+    private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
     
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto) {
-        return ResponseEntity.ok(userService.login(requestDto));
+        return ResponseEntity.ok(authService.login(requestDto));
     }
     
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDto dto) {
-        userService.signup(dto);
+    	authService.signup(dto);
         return ResponseEntity.ok("회원가입 성공");
     }
 }

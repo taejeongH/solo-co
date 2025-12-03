@@ -1,10 +1,13 @@
 package com.ssafy.user.service;
 
+import java.io.IOException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.auth.entity.User;
-import com.ssafy.global.jwt.JwtTokenProvider;
+import com.ssafy.global.service.S3Service;
 import com.ssafy.user.dto.UserInfoResponseDto;
 import com.ssafy.user.dto.UserResponseDto;
 import com.ssafy.user.dto.UserUpdateRequestDto;
@@ -18,8 +21,9 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final S3Service s3service;
 
-    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto dto) {
+    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto dto, MultipartFile file) throws IOException {
         User user = userMapper.findById(userId);
         if (user == null) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -27,14 +31,16 @@ public class UserService {
 
         String nickname = dto.getName() != null ? dto.getName() : user.getName();
         String email = dto.getEmail() != null ? dto.getEmail() : user.getEmail();
-        String profile = dto.getProfileImage() != null ? dto.getProfileImage() : user.getProfileImage();
-
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) {
+            imageUrl = s3service.upload(file, "profile");
+        }
         String password = user.getPassword();
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             password = passwordEncoder.encode(dto.getPassword());
         }
 
-        userMapper.updateUser(userId, nickname, profile, password, email);
+        userMapper.updateUser(userId, nickname, imageUrl, password, email);
 
         User updated = userMapper.findById(userId);
 

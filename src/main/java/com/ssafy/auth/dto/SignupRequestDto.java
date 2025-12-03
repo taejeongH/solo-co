@@ -1,5 +1,7 @@
 package com.ssafy.auth.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Data;
 
 @Data
@@ -8,6 +10,5 @@ public class SignupRequestDto {
     private String password;
     private String email;
     private String name;
-    private String profileImage; // 선택 가능
 }
 

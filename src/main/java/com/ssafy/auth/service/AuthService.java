@@ -55,7 +55,6 @@ public class AuthService {
         user.setPassword(encodedPassword);
         user.setEmail(dto.getEmail());
         user.setName(dto.getName());
-        user.setProfileImage(dto.getProfileImage());
 
         userMapper.insertUser(user);
     }
