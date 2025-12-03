@@ -1,16 +1,15 @@
 package com.ssafy.travel.project.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.ssafy.travel.ai.dto.AutoGenerateResponse;
-import com.ssafy.travel.itinerary.dto.ItineraryCandidateResponse;
-import com.ssafy.travel.place.dto.TravelProjectPlaceRequestDto;
+import com.ssafy.global.service.S3Service;
 import com.ssafy.travel.project.dto.TravelProjectCreateRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
@@ -23,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class TravelProjectService {
 
     private final TravelProjectMapper projectMapper;
+    private final S3Service s3service;
     
     public String calStatus (LocalDate start, LocalDate end) {
     	LocalDate today = LocalDate.now();
@@ -61,8 +61,12 @@ public class TravelProjectService {
     }
     
     public TravelProjectResponseDto createProject(Long userId,
-            TravelProjectCreateRequestDto req) {
-
+            TravelProjectCreateRequestDto req, MultipartFile file) throws IOException {
+    	String imageUrl = null;
+    	if (file != null && !file.isEmpty()) {
+            imageUrl = s3service.upload(file, "profile");
+        }
+    	
 		// TravelProject 도메인 생성
 		TravelProject project = new TravelProject();
 		project.setOwnerId(userId);
@@ -71,7 +75,7 @@ public class TravelProjectService {
 		project.setStartDate(req.getStartDate());
 		project.setEndDate(req.getEndDate());
 		project.setProjectType(req.getProjectType());
-		project.setThumbnail(req.getThumbnail());
+		project.setThumbnail(imageUrl);
 		
 		// DB 저장 (projectId 자동 세팅됨)
 		projectMapper.createProject(project);

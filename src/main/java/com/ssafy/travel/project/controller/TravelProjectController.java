@@ -1,14 +1,16 @@
 package com.ssafy.travel.project.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.travel.project.dto.TravelProjectCreateRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
@@ -44,14 +46,14 @@ public class TravelProjectController {
     
     @PostMapping
     @Operation(summary = "여행 프로젝트 생성", security = @SecurityRequirement(name = "JWT Auth"))
-    public ResponseEntity<TravelProjectResponseDto> createProject(@RequestBody TravelProjectCreateRequestDto requestDto) {
+    public ResponseEntity<TravelProjectResponseDto> createProject(@RequestPart TravelProjectCreateRequestDto dto, @RequestPart MultipartFile thumbnail) throws IOException {
     	Long userId = (Long) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
         TravelProjectResponseDto result =
-                travelProjectService.createProject(userId, requestDto);
+                travelProjectService.createProject(userId, dto, thumbnail);
 
         return ResponseEntity.status(201).body(result);
     }
