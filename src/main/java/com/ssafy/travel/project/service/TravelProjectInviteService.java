@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.travel.project.dto.InviteLinkResponseDto;
+import com.ssafy.travel.project.dto.InviteValidationResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.entity.TravelProjectInvite;
 import com.ssafy.travel.project.mapper.TravelProjectInviteMapper;
@@ -78,4 +79,23 @@ public class TravelProjectInviteService {
 
         return dto;
     }
+    
+    public InviteValidationResponseDto validateInvite(String code) {
+
+        TravelProjectInvite invite = inviteMapper.findByCode(code);
+        if (invite == null) {
+            throw new RuntimeException("유효하지 않은 초대 코드입니다.");
+        }
+
+        TravelProject project = projectMapper.findById(invite.getProjectId());
+
+        InviteValidationResponseDto res = new InviteValidationResponseDto();
+        res.setValid(true);
+        res.setProjectId(project.getProjectId());
+        res.setProjectTitle(project.getTitle());
+        res.setLocation(project.getLocation());
+
+        return res;
+    }
+
 }

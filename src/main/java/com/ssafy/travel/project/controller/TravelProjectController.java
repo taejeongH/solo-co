@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.travel.project.dto.InviteLinkResponseDto;
+import com.ssafy.travel.project.dto.InviteValidationResponseDto;
 import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.service.TravelProjectInviteService;
@@ -92,5 +94,15 @@ public class TravelProjectController {
         InviteLinkResponseDto response = inviteService.createInviteLink(projectId, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    
+    @GetMapping("/invite/validate")
+    @Operation(summary = "여행 프로젝트 초대 링크 검증", security = @SecurityRequirement(name = "JWT Auth"))
+
+    public ResponseEntity<?> validateInvite(@RequestParam String code) {
+
+        InviteValidationResponseDto result = inviteService.validateInvite(code);
+        return ResponseEntity.ok(result);
+    }
+
 
 }
