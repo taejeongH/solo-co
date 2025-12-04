@@ -6,5 +6,44 @@
 	    INSERT INTO project_member (project_id, user_id, role)
 	    VALUES (#{projectId}, #{userId}, #{role})
 	</insert>
+	
+	<select id="findMembers" resultType="com.ssafy.travel.project.dto.TravelProjectMemberResponseDto">
+	    SELECT 
+	        u.user_id      AS userId,
+	        u.username     AS username,
+	        u.name         AS name,
+	        u.profile_image AS profileImage,
+	        pm.role        AS role
+	    FROM project_member pm
+	    JOIN users u ON pm.user_id = u.user_id
+	    WHERE pm.project_id = #{projectId}
+	</select>
+
+	
+	<select id="findOne" resultType="com.ssafy.travel.project.entity.TravelProjectMember">
+	    SELECT 
+	    	id as memberId,
+	    	project_id as projectId,
+	    	user_id as userId,
+	    	role as role
+	    FROM project_member
+	    WHERE project_id = #{projectId}
+	      AND user_id = #{userId}
+	</select>
+	
+	<delete id="deleteMember">
+	    DELETE FROM project_member
+	    WHERE project_id = #{projectId}
+	      AND user_id = #{userId}
+	</delete>
+	
+	<select id="isMember" resultType="boolean">
+	    SELECT COUNT(*) > 0
+	    FROM project_member
+	    WHERE project_id = #{projectId}
+	      AND user_id = #{userId}
+	</select>
+	
+	
 
 </mapper>
