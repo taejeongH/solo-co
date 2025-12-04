@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.travel.project.mapper.TravelProjectInviteMapper">
+
+    <resultMap id="ProjectInviteResultMap" type="com.ssafy.travel.project.entity.TravelProjectInvite">
+        <id     property="inviteId"   column="invite_id"/>
+        <result property="projectId"  column="project_id"/>
+        <result property="inviteCode" column="invite_code"/>
+        <result property="expiresAt"  column="expires_at"/>
+        <result property="maxUses"    column="max_uses"/>
+        <result property="useCount"   column="use_count"/>
+        <result property="createdAt"  column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ssafy.travel.project.entity.TravelProjectInvite"
+            useGeneratedKeys="true" keyProperty="inviteId">
+        INSERT INTO project_invite (
+            project_id, invite_code, expires_at, max_uses, use_count
+        ) VALUES (
+            #{projectId},
+            #{inviteCode},
+            #{expiresAt},
+            #{maxUses},
+            #{useCount}
+        )
+    </insert>
+
+    <select id="findByCode" parameterType="string"
+            resultMap="ProjectInviteResultMap">
+        SELECT *
+        FROM project_invite
+        WHERE invite_code = #{inviteCode}
+    </select>
+    
+    <select id="findByProjectId" resultType="com.ssafy.travel.project.entity.TravelProjectInvite">
+	    SELECT 
+	    	invite_id as inviteId,
+	    	project_id as projectId,
+	    	invite_code as inviteCode,
+	    	expires_at as expiresAt,
+	    	max_uses as maxUses,
+	    	use_count as useCount,
+	    	created_at as createdAt
+	    FROM project_invite
+	    WHERE project_id = #{projectId}
+	    LIMIT 1
+	</select>
+    
+    <delete id="deleteById">
+	    DELETE FROM project_invite
+	    WHERE invite_id = #{inviteId}
+	</delete>
+    
+
+</mapper>

@@ -56,3 +56,16 @@ CREATE TABLE project_itinerary (
 
     FOREIGN KEY (project_id) REFERENCES travel_project(project_id) ON DELETE CASCADE
 );
+
+CREATE TABLE project_invite (
+    invite_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id   BIGINT NOT NULL,
+    invite_code  VARCHAR(64) NOT NULL UNIQUE,
+    expires_at   DATETIME NULL,
+    max_uses     INT NULL,
+    use_count    INT NOT NULL DEFAULT 0,
+    created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_invite_project
+        FOREIGN KEY (project_id) REFERENCES travel_project(project_id)
+);
+
