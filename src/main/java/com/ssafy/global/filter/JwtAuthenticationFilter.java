@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ssafy.global.jwt.JwtTokenProvider;
+import com.ssafy.global.security.CustomUserDetails;
+import com.ssafy.global.security.CustomUserDetailsService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -33,24 +36,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
-            // 1) 토큰 유효성 검사
+            // 🔥 1) 토큰 유효성 검사
             if (jwtTokenProvider.validateToken(token)) {
 
-                // 2) userId 추출 (subject → email로 바뀌었으므로 claim에서 꺼냄)
-                Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                // 🔥 2) username 추출 (subject)
+                String username = jwtTokenProvider.getUsername(token);
 
+                // 🔥 3) DB에서 사용자 정보 조회 → CustomUserDetails 반환
+                CustomUserDetails userDetails =
+                        (CustomUserDetails) userDetailsService.loadUserByUsername(username);
+
+                // 🔥 4) Authentication 생성
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                userId, // principal 로 userId 저장
+                                userDetails,     // principal
                                 null,
-                                null  // roles 없음
+                                userDetails.getAuthorities()
                         );
 
                 authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                // 3) SecurityContext에 인증 정보 저장
+                // 🔥 5) SecurityContext에 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

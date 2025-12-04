@@ -25,25 +25,31 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
+
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/", 
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs/**",
-                        "/api-docs/**",
-                        "/webjars/**",
-                        "/error",
-                        "/favicon.ico",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
+                .requestMatchers("/", 
+                        "/swagger-ui/**", "/swagger-ui.html",
+                        "/v3/api-docs/**", "/api-docs/**",
+                        "/webjars/**", "/error", "/favicon.ico",
+                        "/css/**", "/js/**", "/images/**"
                 ).permitAll()
+
                 .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
-                .requestMatchers("/api/travels/**").authenticated()  // 여행 조회/생성/수정/삭제 인증 필요
-                .requestMatchers("/api/users/**").authenticated()    // 유저 관련 기능
+
+                // 🔥 초대 링크는 검증만 공개 가능하게 해도 됨
+                .requestMatchers("/api/travels/invite/validate").permitAll()
+
+                // 🔥 초대 참여는 로그인 필요 없음 (선택)
+                .requestMatchers("/api/travels/invite/join").authenticated()
+
+                // 🔥 여행 & 유저는 인증 필요
+                .requestMatchers("/api/travels/**").authenticated()
+                .requestMatchers("/api/users/**").authenticated()
+
                 .anyRequest().authenticated()
             )
+
+            // 🔥 JWT Filter를 UsernamePasswordAuthenticationFilter 앞에 추가
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

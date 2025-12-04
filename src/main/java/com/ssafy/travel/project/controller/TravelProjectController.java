@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.project.dto.InviteJoinRequestDto;
 import com.ssafy.travel.project.dto.InviteLinkResponseDto;
 import com.ssafy.travel.project.dto.InviteValidationResponseDto;
@@ -41,13 +42,11 @@ public class TravelProjectController {
     @PutMapping("/{projectId}")
     @Operation(summary = "여행 프로젝트 수정", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> getPlaces(
+    		@AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long projectId, 
             @RequestPart TravelProjectRequestDto dto, 
             @RequestPart(required = false) MultipartFile thumbnail) throws IOException {
-    	Long userId = (Long) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+    	Long userId = user.getUserId();
     	
     	TravelProjectResponseDto result = travelProjectService.updateProject(projectId, userId, dto, thumbnail);
         return ResponseEntity.ok(result);
@@ -60,11 +59,8 @@ public class TravelProjectController {
             security = @SecurityRequirement(name = "JWT Auth")
     )
     @GetMapping
-    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects() {
-        Long userId = (Long) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user) {
+        Long userId = user.getUserId();
 
         List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(userId);
 
@@ -73,14 +69,13 @@ public class TravelProjectController {
     
     @PostMapping
     @Operation(summary = "여행 프로젝트 생성", security = @SecurityRequirement(name = "JWT Auth"))
-    public ResponseEntity<TravelProjectResponseDto> createProject(@RequestPart TravelProjectRequestDto dto, @RequestPart MultipartFile thumbnail) throws IOException {
-    	Long userId = (Long) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+    public ResponseEntity<TravelProjectResponseDto> createProject(
+    		@AuthenticationPrincipal CustomUserDetails user,
+    		@RequestPart TravelProjectRequestDto dto, 
+    		@RequestPart MultipartFile thumbnail) throws IOException {
+    	Long userId = user.getUserId();
 
-        TravelProjectResponseDto result =
-                travelProjectService.createProject(userId, dto, thumbnail);
+        TravelProjectResponseDto result = travelProjectService.createProject(userId, dto, thumbnail);
 
         return ResponseEntity.status(201).body(result);
     }

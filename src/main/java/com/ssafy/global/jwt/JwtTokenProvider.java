@@ -16,19 +16,25 @@ public class JwtTokenProvider {
     private final Key secretKey = Keys.hmacShaKeyFor("MY_SUPER_SECRET_KEY_1234567890_ABCDE".getBytes());
     private final long EXPIRATION = 1000L * 60 * 60 * 24; // 24시간
 
-    public String createToken(Long userId, String email) {
+    /**
+     * 🔥 토큰 생성
+     * subject = username (로그인 ID)
+     * claims = userId(PK), email(optional)
+     */
+    public String createToken(Long userId, String username, String email) {
         Date now = new Date();
 
         return Jwts.builder()
-                .setSubject(email) // subject = 식별용 이메일로 변경
-                .claim("userId", userId)  // PK는 claim으로
-                .claim("email", email)
+                .setSubject(username)            // ⭐ 인증 기준이 되는 username
+                .claim("userId", userId)         // 내부 사용 PK
+                .claim("email", email)           // 부가 정보
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + EXPIRATION))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    /** 🔥 토큰 유효성 검사 */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -41,8 +47,19 @@ public class JwtTokenProvider {
         }
     }
 
+    /** 🔥 username 가져오기 (subject) */
+    public String getUsername(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();   // subject = username
+    }
+
+    /** 🔥 userId 가져오기 */
     public Long getUserIdFromToken(String token) {
-    	Claims claims = Jwts.parserBuilder()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
@@ -51,6 +68,7 @@ public class JwtTokenProvider {
         return claims.get("userId", Long.class);
     }
 
+    /** 🔥 email 가져오기 */
     public String getEmailFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
