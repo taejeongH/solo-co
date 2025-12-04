@@ -54,5 +54,18 @@
 	    WHERE invite_id = #{inviteId}
 	</delete>
     
+    
+    <select id="existsMember" resultType="int">
+	    SELECT COUNT(*)
+	    FROM project_member
+	    WHERE project_id = #{projectId}
+	      AND user_id = #{userId}
+	</select>
+	
+	<insert id="addMember">
+	    INSERT INTO project_member(project_id, user_id, role)
+	    VALUES(#{projectId}, #{userId}, 'MEMBER')
+	</insert>
+    
 
 </mapper>

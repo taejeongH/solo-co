@@ -97,5 +97,25 @@ public class TravelProjectInviteService {
 
         return res;
     }
+    
+    @Transactional
+    public void joinProject(String inviteCode, Long userId) {
+
+        TravelProjectInvite invite = inviteMapper.findByCode(inviteCode);
+        if (invite == null) {
+            throw new RuntimeException("유효하지 않은 초대 코드");
+        }
+
+        Long projectId = invite.getProjectId();
+
+        // 이미 참여한 사용자면 추가 안 함
+        Integer exists = inviteMapper.existsMember(projectId, userId);
+        if (exists != null && exists > 0) {
+            throw new RuntimeException("이미 참여한 사용자입니다.");
+        }
+
+        // 참여 추가
+        inviteMapper.addMember(projectId, userId);
+    }	
 
 }
