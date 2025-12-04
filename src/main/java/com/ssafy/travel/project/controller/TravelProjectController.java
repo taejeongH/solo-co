@@ -80,7 +80,7 @@ public class TravelProjectController {
         return ResponseEntity.status(201).body(result);
     }
     
-    @PostMapping("/{projectId}/invite-link")
+    @PostMapping("/{projectId}/invite")
     @Operation(summary = "여행 프로젝트 초대 링크 생성", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<InviteLinkResponseDto> createInviteLink(
             @PathVariable Long projectId) {
