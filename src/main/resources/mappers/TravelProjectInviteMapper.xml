@@ -66,6 +66,11 @@
 	    INSERT INTO project_member(project_id, user_id, role)
 	    VALUES(#{projectId}, #{userId}, 'MEMBER')
 	</insert>
+	
+	<delete id="deleteByProjectId">
+	    DELETE FROM project_invite WHERE project_id = #{projectId}
+	</delete>
+	
     
 
 </mapper>

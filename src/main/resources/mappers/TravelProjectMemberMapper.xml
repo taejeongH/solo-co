@@ -44,6 +44,8 @@
 	      AND user_id = #{userId}
 	</select>
 	
-	
+	<delete id="deleteAllByProjectId">
+	    DELETE FROM project_member WHERE project_id = #{projectId}
+	</delete>
 
 </mapper>

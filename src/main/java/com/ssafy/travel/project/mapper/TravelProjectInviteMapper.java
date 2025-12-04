@@ -16,4 +16,5 @@ public interface TravelProjectInviteMapper {
             @Param("userId") Long userId);
     void addMember(@Param("projectId") Long projectId,
     		@Param("userId") Long userId);
+    void deleteByProjectId(Long projectId);
 }

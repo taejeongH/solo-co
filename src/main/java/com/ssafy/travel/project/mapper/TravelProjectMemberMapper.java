@@ -15,5 +15,5 @@ public interface TravelProjectMemberMapper {
 	void deleteMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
 	void insertMember(@Param("projectId") Long projectId, @Param("userId") Long userId, @Param("role") String role);
 	boolean isMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
-
+	void deleteAllByProjectId(Long projectId);
 }

@@ -55,5 +55,10 @@
 	        thumbnail = #{thumbnail}
 	    WHERE project_id = #{projectId};
 	</update>
+	
+	<delete id="delete">
+	    DELETE FROM travel_project WHERE project_id = #{projectId}
+	</delete>
+	
 
 </mapper>

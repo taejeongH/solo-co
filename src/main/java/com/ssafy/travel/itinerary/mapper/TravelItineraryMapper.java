@@ -15,4 +15,5 @@ public interface TravelItineraryMapper {
 		    @Param("day") int day,
 		    @Param("places") List<String> places
 		);
+	
 }

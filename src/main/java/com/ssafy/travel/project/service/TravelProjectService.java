@@ -11,9 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.global.service.S3Service;
+import com.ssafy.travel.itinerary.mapper.TravelItineraryMapper;
+import com.ssafy.travel.place.mapper.TravelProjectPlaceMapper;
 import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
+import com.ssafy.travel.project.entity.TravelProjectMember;
+import com.ssafy.travel.project.mapper.TravelProjectInviteMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
 
@@ -25,6 +29,9 @@ public class TravelProjectService {
 
     private final TravelProjectMapper projectMapper;
     private final TravelProjectMemberMapper projectMemberMapper;
+    private final TravelProjectInviteMapper inviteMapper;
+    private final TravelItineraryMapper itineraryMapper;
+    private final TravelProjectPlaceMapper placeMapper;
     private final S3Service s3service;
     
     public String calStatus (LocalDate start, LocalDate end) {
@@ -150,6 +157,30 @@ public class TravelProjectService {
         res.setStatus(project.getStatus());
 
         return res;
+    }
+    
+    @Transactional
+    public void deleteProject(Long projectId, Long requesterId) {
+
+        // 1) 요청자가 프로젝트 멤버인지 확인
+        TravelProjectMember requester = projectMemberMapper.findOne(projectId, requesterId);
+        if (requester == null) {
+            throw new RuntimeException("프로젝트에 참여하지 않은 사용자입니다.");
+        }
+
+        // 2) OWNER인지 확인
+        if (!"OWNER".equals(requester.getRole())) {
+            throw new RuntimeException("프로젝트 삭제는 OWNER만 가능합니다.");
+        }
+
+        // 3) 순서대로 관련 데이터 제거
+        inviteMapper.deleteByProjectId(projectId);
+        projectMemberMapper.deleteAllByProjectId(projectId);
+        itineraryMapper.deleteByProjectId(projectId);
+        placeMapper.deleteAllByProjectId(projectId);
+
+        // 4) 마지막으로 프로젝트 삭제
+        projectMapper.delete(projectId);
     }
     
 }

@@ -16,4 +16,7 @@ public interface TravelProjectPlaceMapper {
                      @Param("projectId") Long projectId);
 
     List<TravelProjectPlace> findByProjectId(Long projectId);
+    
+    void deleteAllByProjectId(Long projectId);
+
 }

@@ -26,5 +26,10 @@
     	DELETE from project_place 
     	WHERE place_id=#{placeId} and project_id=#{projectId}
     </delete>
+    
+    <delete id="deleteAllByProjectId">
+	    DELETE FROM project_place WHERE project_id = #{projectId}
+	</delete>
+    
 
 </mapper>

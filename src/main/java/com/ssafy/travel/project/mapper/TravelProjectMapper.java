@@ -14,4 +14,5 @@ public interface TravelProjectMapper {
     List<TravelProject> findProjectsByUserId(Long userId);
     void createProject(TravelProject project);
     void update(TravelProject project);
+    void delete(Long projectId);
 }
