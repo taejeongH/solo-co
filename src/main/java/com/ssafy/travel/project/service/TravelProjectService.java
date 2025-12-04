@@ -15,6 +15,7 @@ import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
+import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class TravelProjectService {
 
     private final TravelProjectMapper projectMapper;
+    private final TravelProjectMemberMapper projectMemberMapper;
     private final S3Service s3service;
     
     public String calStatus (LocalDate start, LocalDate end) {
@@ -80,6 +82,7 @@ public class TravelProjectService {
 		
 		// DB 저장 (projectId 자동 세팅됨)
 		projectMapper.createProject(project);
+		projectMemberMapper.insertMember(project.getProjectId(), userId, "OWNER");
 		
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDate start = LocalDate.parse(project.getStartDate(), formatter);
