@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.travel.community.mapper.ProjectPostVoteMapper">
+
+    <insert id="insertVote" useGeneratedKeys="true" keyProperty="voteId">
+        INSERT INTO project_post_vote (post_id, question, multiple_choice)
+        VALUES (#{postId}, #{question}, #{multipleChoice})
+    </insert>
+
+    <insert id="insertOption" useGeneratedKeys="true" keyProperty="optionId">
+        INSERT INTO project_post_vote_option (vote_id, option_text, order_no)
+        VALUES (#{voteId}, #{optionText}, #{orderNo})
+    </insert>
+
+    <select id="findVoteIdByPostId" resultType="Long">
+        SELECT vote_id FROM project_post_vote WHERE post_id = #{postId}
+    </select>
+
+    <select id="findOptionsByVoteId"
+            resultType="com.ssafy.travel.community.entity.ProjectPostVoteOption">
+        SELECT option_id, vote_id, option_text, order_no
+        FROM project_post_vote_option
+        WHERE vote_id = #{voteId}
+        ORDER BY order_no
+    </select>
+
+</mapper>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.travel.community.mapper.ProjectPostMapper">
+
+    <insert id="insertPost" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO project_post (project_id, author_id, title, content)
+        VALUES (#{projectId}, #{authorId}, #{title}, #{content})
+    </insert>
+
+</mapper>
