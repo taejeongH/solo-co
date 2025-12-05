@@ -69,3 +69,77 @@ CREATE TABLE project_invite (
         FOREIGN KEY (project_id) REFERENCES travel_project(project_id)
 );
 
+##################### 커뮤니티 ####################
+
+CREATE TABLE project_post (
+    post_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,          -- 어느 프로젝트의 게시글인지
+    author_id BIGINT NOT NULL,           -- 작성자(user_id)
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,               -- 게시글 내용 (markdown 가능)
+    created_at DATETIME DEFAULT NOW(),
+    updated_at DATETIME DEFAULT NOW() ON UPDATE NOW(),
+    
+    FOREIGN KEY (project_id) REFERENCES travel_project(project_id),
+    FOREIGN KEY (author_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE project_post_image (
+    image_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    order_no INT DEFAULT 1,          -- 1~3이면 대표 이미지로 취급
+    
+    FOREIGN KEY (post_id) REFERENCES project_post(post_id)
+);
+
+CREATE TABLE project_post_tag (
+    tag_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    tag VARCHAR(100) NOT NULL,
+    
+    FOREIGN KEY (post_id) REFERENCES project_post(post_id)
+);
+
+CREATE TABLE project_post_vote (
+    vote_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    question VARCHAR(255) NOT NULL,        -- "어디로 갈까요?"
+    multiple_choice BOOLEAN DEFAULT FALSE, -- 복수 선택 여부
+    created_at DATETIME DEFAULT NOW(),
+    
+    FOREIGN KEY (post_id) REFERENCES project_post(post_id)
+);
+
+CREATE TABLE project_post_vote_option (
+    option_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    vote_id BIGINT NOT NULL,
+    option_text VARCHAR(255) NOT NULL,
+    order_no INT DEFAULT 1,               -- 표시 순서
+    
+    FOREIGN KEY (vote_id) REFERENCES project_post_vote(vote_id)
+);
+
+CREATE TABLE project_post_vote_result (
+    result_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    vote_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    option_id BIGINT NOT NULL,
+    voted_at DATETIME DEFAULT NOW(),
+
+    FOREIGN KEY (vote_id) REFERENCES project_post_vote(vote_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (option_id) REFERENCES project_post_vote_option(option_id)
+);
+
+CREATE TABLE project_post_comment (
+    comment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT NOW(),
+    updated_at DATETIME DEFAULT NOW() ON UPDATE NOW(),
+
+    FOREIGN KEY (post_id) REFERENCES project_post(post_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
