@@ -8,5 +8,11 @@
         INSERT INTO project_post_image (post_id, image_url, order_no)
         VALUES (#{postId}, #{imageUrl}, #{sortOrder})
     </insert>
+    
+    <select id="findImagesByPostId" resultType="string">
+	    SELECT image_url
+	    FROM project_post_image
+	    WHERE post_id = #{postId}
+	</select>
 
 </mapper>

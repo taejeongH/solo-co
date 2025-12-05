@@ -8,5 +8,11 @@
         INSERT INTO project_post_tag (post_id, tag)
         VALUES (#{postId}, #{tag})
     </insert>
+    
+    <select id="findTagsByPostId" resultType="string">
+	    SELECT tag
+	    FROM project_post_tag
+	    WHERE post_id = #{postId}
+	</select>
 
 </mapper>

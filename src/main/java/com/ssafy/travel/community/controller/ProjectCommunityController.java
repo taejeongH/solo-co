@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,13 +24,13 @@ import lombok.RequiredArgsConstructor;
 
 @SecurityRequirement(name = "JWT Auth")
 @RestController
-@RequestMapping("/api/travels")
+@RequestMapping("/api/travels/{projectId}/posts")
 @RequiredArgsConstructor
 public class ProjectCommunityController {
 	
 	private final CommunityPostService postService;
 	
-	@PostMapping("/{projectId}/posts")
+	@PostMapping
     @Operation(summary = "커뮤니티 게시글 작성")
 	public ResponseEntity<?> createPost(
 	        @PathVariable Long projectId,
@@ -45,4 +46,10 @@ public class ProjectCommunityController {
 	    	    )
 	    	);
 	}
+	
+    @GetMapping
+    @Operation(summary = "커뮤니티 게시글 목록 조회")
+    public ResponseEntity<?> getPostList(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long projectId) {
+        return ResponseEntity.ok(postService.getPostList(projectId, user.getUserId()));
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.global.service.S3Service;
 import com.ssafy.travel.community.dto.CreatePostRequestDto;
+import com.ssafy.travel.community.dto.ProjectPostListResponseDto;
 import com.ssafy.travel.community.dto.VoteCreateRequestDto;
 import com.ssafy.travel.community.entity.ProjectPost;
 import com.ssafy.travel.community.entity.ProjectPostVote;
@@ -36,12 +37,8 @@ public class CommunityPostService {
     private final ProjectPostTagMapper tagMapper;
     private final ProjectPostVoteMapper voteMapper;
     private final S3Service s3Service;
-
-    @Transactional
-    public Long createPost(Long projectId, Long userId,
-                           CreatePostRequestDto dto,
-                           List<MultipartFile> images) throws IOException {
-    	
+    
+    void checkPermission(Long projectId, Long userId) {
     	//project가 존재한지 확인
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
@@ -52,6 +49,15 @@ public class CommunityPostService {
         if (!memberMapper.isMember(projectId, userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 접근 권한이 없습니다.");
         }
+    }
+    
+    @Transactional
+    public Long createPost(Long projectId, Long userId,
+                           CreatePostRequestDto dto,
+                           List<MultipartFile> images) throws IOException {
+    	
+    	checkPermission(projectId, userId);
+    	
     	
         // 1) 게시글 저장
         ProjectPost post = new ProjectPost();
@@ -107,5 +113,19 @@ public class CommunityPostService {
         }
 
         return postId;
+    }
+    
+
+    
+    public List<ProjectPostListResponseDto> getPostList(Long projectId, Long userId) {
+    	checkPermission(projectId, userId);
+        
+    	List<ProjectPostListResponseDto> posts = postMapper.findAllPostsByProjectId(projectId);
+        for (ProjectPostListResponseDto post : posts) {
+            post.setImages(imageMapper.findImagesByPostId(post.getPostId()));
+            post.setTags(tagMapper.findTagsByPostId(post.getPostId()));
+        }
+
+        return posts;
     }
 }

@@ -8,5 +8,22 @@
         INSERT INTO project_post (project_id, author_id, title, content)
         VALUES (#{projectId}, #{authorId}, #{title}, #{content})
     </insert>
+    
+    <select id="findAllPostsByProjectId" resultType="com.ssafy.travel.community.dto.ProjectPostListResponseDto">
+	    SELECT 
+	        p.post_id      AS postId,
+	        p.title        AS title,
+	        SUBSTRING(p.content, 1, 120) AS contentPreview,
+	
+	        u.user_id      AS authorId,
+	        u.name         AS authorName,
+	        u.profile_image AS authorProfileImage
+	
+	    FROM project_post p
+	    JOIN users u ON p.author_id = u.user_id
+	    WHERE p.project_id = #{projectId}
+	    ORDER BY p.created_at DESC
+	</select>
+    
 
 </mapper>
