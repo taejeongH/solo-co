@@ -11,11 +11,16 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.global.service.S3Service;
 import com.ssafy.travel.community.dto.CreatePostRequestDto;
+import com.ssafy.travel.community.dto.ProjectPostDetailResponseDto;
 import com.ssafy.travel.community.dto.ProjectPostListResponseDto;
 import com.ssafy.travel.community.dto.VoteCreateRequestDto;
+import com.ssafy.travel.community.dto.VoteDetailDto;
+import com.ssafy.travel.community.dto.VoteOptionDto;
 import com.ssafy.travel.community.entity.ProjectPost;
 import com.ssafy.travel.community.entity.ProjectPostVote;
 import com.ssafy.travel.community.entity.ProjectPostVoteOption;
+import com.ssafy.travel.community.mapper.PostCommentMapper;
+import com.ssafy.travel.community.mapper.PostVoteOptionMapper;
 import com.ssafy.travel.community.mapper.ProjectPostImageMapper;
 import com.ssafy.travel.community.mapper.ProjectPostMapper;
 import com.ssafy.travel.community.mapper.ProjectPostTagMapper;
@@ -36,6 +41,8 @@ public class CommunityPostService {
     private final ProjectPostImageMapper imageMapper;
     private final ProjectPostTagMapper tagMapper;
     private final ProjectPostVoteMapper voteMapper;
+    private final PostVoteOptionMapper voteOptionMapper;
+    private final PostCommentMapper commentMapper;
     private final S3Service s3Service;
     
     void checkPermission(Long projectId, Long userId) {
@@ -128,4 +135,40 @@ public class CommunityPostService {
 
         return posts;
     }
+    
+    public ProjectPostDetailResponseDto getPostDetail(Long projectId, Long postId, Long userId) {
+    	checkPermission(projectId, userId);
+        // 게시글 기본 정보
+    	ProjectPostDetailResponseDto post = postMapper.findPostDetail(postId);
+
+        // 이미지
+        post.setImages(imageMapper.findImagesByPostId(postId));
+
+        // 태그
+        post.setTags(tagMapper.findTagsByPostId(postId));
+
+        // 투표
+        VoteDetailDto vote = voteMapper.findVoteByPostId(postId);
+
+        if (vote != null) {
+            List<VoteOptionDto> options = voteOptionMapper.findVoteOptions(vote.getVoteId());
+            vote.setOptions(options);
+
+            int total = options.stream()
+                    .mapToInt(VoteOptionDto::getCount)
+                    .sum();
+            vote.setTotalVotes(total);
+
+            Boolean hasVoted = voteMapper.hasUserVoted(vote.getVoteId(), userId);
+            vote.setHasVoted(hasVoted);
+        }
+
+        post.setVote(vote);
+
+        // 댓글
+        post.setComments(commentMapper.findCommentsByPostId(postId));
+
+        return post;
+    }
+
 }

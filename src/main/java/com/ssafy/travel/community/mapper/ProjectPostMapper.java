@@ -3,7 +3,9 @@ package com.ssafy.travel.community.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import com.ssafy.travel.community.dto.ProjectPostDetailResponseDto;
 import com.ssafy.travel.community.dto.ProjectPostListResponseDto;
 import com.ssafy.travel.community.entity.ProjectPost;
 
@@ -11,4 +13,5 @@ import com.ssafy.travel.community.entity.ProjectPost;
 public interface ProjectPostMapper {
 	void insertPost(ProjectPost post);
 	List<ProjectPostListResponseDto> findAllPostsByProjectId(Long projectId);
+	ProjectPostDetailResponseDto findPostDetail(@Param("postId") Long postId);
 }

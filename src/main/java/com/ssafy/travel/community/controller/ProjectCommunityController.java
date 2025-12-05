@@ -52,4 +52,19 @@ public class ProjectCommunityController {
     public ResponseEntity<?> getPostList(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long projectId) {
         return ResponseEntity.ok(postService.getPostList(projectId, user.getUserId()));
     }
+    
+    
+    @GetMapping("/{postId}")
+    @Operation(summary = "커뮤니티 게시글 상세 조회")
+    public ResponseEntity<?> getPostDetail(
+    		@PathVariable Long projectId,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        Long userId = user.getUserId();
+
+        return ResponseEntity.ok(
+                postService.getPostDetail(projectId, postId, userId)
+        );
+    }
 }

@@ -23,5 +23,23 @@
         WHERE vote_id = #{voteId}
         ORDER BY order_no
     </select>
+    
+    <select id="hasUserVoted" resultType="boolean">
+	    SELECT 
+	        CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END
+	    FROM project_post_vote_result
+	    WHERE vote_id = #{voteId}
+	      AND user_id = #{userId}
+	</select>
+	
+	<select id="findVoteByPostId"
+            resultType="com.ssafy.travel.community.dto.VoteDetailDto">
+        SELECT 
+            v.vote_id AS voteId,
+            v.question AS question,
+            v.created_at AS createdAt
+        FROM project_post_vote v
+        WHERE v.post_id = #{postId}
+    </select>
 
 </mapper>

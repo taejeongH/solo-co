@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.travel.community.mapper.PostVoteOptionMapper">
+
+    <select id="findVoteOptions"
+            parameterType="long"
+            resultType="com.ssafy.travel.community.dto.VoteOptionDto">
+
+        SELECT
+            o.option_id AS optionId,
+            o.option_text AS text,
+            (
+                SELECT COUNT(*)
+                FROM project_post_vote_result r
+                WHERE r.option_id = o.option_id
+            ) AS count
+        FROM project_post_vote_option o
+        WHERE o.vote_id = #{voteId}
+        ORDER BY o.option_id
+
+    </select>
+
+</mapper>
