@@ -5,10 +5,10 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.ssafy.travel.community.dto.CommentDto;
+import com.ssafy.travel.community.dto.response.CommentResponseDto;
 
 @Mapper
 public interface ProjectPostCommentMapper {
-    List<CommentDto> findCommentsByPostId(@Param("postId") Long postId);
+    List<CommentResponseDto> findCommentsByPostId(@Param("postId") Long postId);
     int deleteCommentsByPostId(@Param("postId") Long postId);
 }

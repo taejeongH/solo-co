@@ -1,4 +1,4 @@
-package com.ssafy.travel.community.dto;
+package com.ssafy.travel.community.dto.response;
 
 import java.util.List;
 
@@ -10,10 +10,10 @@ import lombok.Setter;
 @Getter 
 @Setter 
 @NoArgsConstructor
-public class VoteDetailDto {
+public class VoteDetailResponseDto {
     private Long voteId;
     private String question;
-    private List<VoteOptionDto> options;
+    private List<VoteOptionResponseDto> options;
     private Integer totalVotes;
     private Boolean hasVoted;
 }

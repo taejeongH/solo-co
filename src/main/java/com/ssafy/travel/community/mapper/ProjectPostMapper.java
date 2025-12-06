@@ -5,8 +5,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.ssafy.travel.community.dto.ProjectPostDetailResponseDto;
-import com.ssafy.travel.community.dto.ProjectPostListResponseDto;
+import com.ssafy.travel.community.dto.response.ProjectPostDetailResponseDto;
+import com.ssafy.travel.community.dto.response.ProjectPostListResponseDto;
 import com.ssafy.travel.community.entity.ProjectPost;
 
 @Mapper

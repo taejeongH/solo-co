@@ -6,7 +6,7 @@
 
     <select id="findVoteOptions"
             parameterType="long"
-            resultType="com.ssafy.travel.community.dto.VoteOptionDto">
+            resultType="com.ssafy.travel.community.dto.response.VoteOptionResponseDto">
         SELECT
             o.option_id AS optionId,
             o.option_text AS text,

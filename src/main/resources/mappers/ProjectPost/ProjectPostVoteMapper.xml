@@ -33,7 +33,7 @@
 	</select>
 	
 	<select id="findVoteByPostId"
-            resultType="com.ssafy.travel.community.dto.VoteDetailDto">
+            resultType="com.ssafy.travel.community.dto.response.VoteDetailResponseDto">
         SELECT 
             v.vote_id AS voteId,
             v.question AS question,

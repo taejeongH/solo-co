@@ -1,4 +1,4 @@
-package com.ssafy.travel.community.dto;
+package com.ssafy.travel.community.dto.request;
 
 import java.util.List;
 

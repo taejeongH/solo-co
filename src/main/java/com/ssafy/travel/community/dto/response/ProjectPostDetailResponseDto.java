@@ -1,4 +1,4 @@
-package com.ssafy.travel.community.dto;
+package com.ssafy.travel.community.dto.response;
 
 import java.util.List;
 
@@ -23,6 +23,6 @@ public class ProjectPostDetailResponseDto {
     private List<String> images;
     private List<String> tags;
 
-    private VoteDetailDto vote;
-    private List<CommentDto> comments;
+    private VoteDetailResponseDto vote;
+    private List<CommentResponseDto> comments;
 }

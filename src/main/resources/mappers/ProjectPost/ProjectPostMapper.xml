@@ -9,7 +9,7 @@
         VALUES (#{projectId}, #{authorId}, #{title}, #{content})
     </insert>
     
-    <select id="findAllPostsByProjectId" resultType="com.ssafy.travel.community.dto.ProjectPostListResponseDto">
+    <select id="findAllPostsByProjectId" resultType="com.ssafy.travel.community.dto.response.ProjectPostListResponseDto">
 	    SELECT 
 	        p.post_id      AS postId,
 	        p.title        AS title,
@@ -25,7 +25,7 @@
 	    ORDER BY p.created_at DESC
 	</select>
     
-    <select id="findPostDetail" resultType="com.ssafy.travel.community.dto.ProjectPostDetailResponseDto">
+    <select id="findPostDetail" resultType="com.ssafy.travel.community.dto.response.ProjectPostDetailResponseDto">
 	    SELECT 
 	        p.post_id AS postId,
 	        p.title,

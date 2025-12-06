@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.global.security.CustomUserDetails;
-import com.ssafy.travel.community.dto.CreatePostRequestDto;
+import com.ssafy.travel.community.dto.request.CreatePostRequestDto;
 import com.ssafy.travel.community.service.CommunityPostService;
 
 import io.swagger.v3.oas.annotations.Operation;

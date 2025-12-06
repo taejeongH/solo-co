@@ -10,12 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.global.service.S3Service;
-import com.ssafy.travel.community.dto.CreatePostRequestDto;
-import com.ssafy.travel.community.dto.ProjectPostDetailResponseDto;
-import com.ssafy.travel.community.dto.ProjectPostListResponseDto;
-import com.ssafy.travel.community.dto.VoteCreateRequestDto;
-import com.ssafy.travel.community.dto.VoteDetailDto;
-import com.ssafy.travel.community.dto.VoteOptionDto;
+import com.ssafy.travel.community.dto.request.CreatePostRequestDto;
+import com.ssafy.travel.community.dto.request.VoteCreateRequestDto;
+import com.ssafy.travel.community.dto.response.ProjectPostDetailResponseDto;
+import com.ssafy.travel.community.dto.response.ProjectPostListResponseDto;
+import com.ssafy.travel.community.dto.response.VoteDetailResponseDto;
+import com.ssafy.travel.community.dto.response.VoteOptionResponseDto;
 import com.ssafy.travel.community.entity.ProjectPost;
 import com.ssafy.travel.community.entity.ProjectPostVote;
 import com.ssafy.travel.community.entity.ProjectPostVoteOption;
@@ -145,14 +145,14 @@ public class CommunityPostService {
 
         post.setImages(imageMapper.findImagesByPostId(postId));
         post.setTags(tagMapper.findTagsByPostId(postId));
-        VoteDetailDto vote = voteMapper.findVoteByPostId(postId);
+        VoteDetailResponseDto vote = voteMapper.findVoteByPostId(postId);
 
         if (vote != null) {
-            List<VoteOptionDto> options = voteOptionMapper.findVoteOptions(vote.getVoteId());
+            List<VoteOptionResponseDto> options = voteOptionMapper.findVoteOptions(vote.getVoteId());
             vote.setOptions(options);
 
             int total = options.stream()
-                    .mapToInt(VoteOptionDto::getCount)
+                    .mapToInt(VoteOptionResponseDto::getCount)
                     .sum();
             vote.setTotalVotes(total);
 
