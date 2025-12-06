@@ -48,5 +48,14 @@
 	    FROM project_post
 	    WHERE post_id = #{postId}
 	</select>
+	
+	<update id="updatePostBasic">
+        UPDATE project_post
+        SET
+            title = #{title},
+            content = #{content},
+            updated_at = NOW()
+        WHERE post_id = #{postId}
+    </update>
 
 </mapper>

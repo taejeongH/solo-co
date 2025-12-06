@@ -193,5 +193,105 @@ public class CommunityPostService {
         // 게시글 삭제
         postMapper.deletePost(postId);
     }
+    
+    public void updatePost(Long projectId, Long postId, Long userId, CreatePostRequestDto request, List<MultipartFile> images) throws IOException {
+
+        // 작성자 검증
+    	checkPermission(projectId, userId);
+        Long authorId = postMapper.findPostAuthorId(postId);
+        if (authorId == null)
+            throw new RuntimeException("존재하지 않는 게시글입니다.");
+
+        if (!authorId.equals(userId))
+            throw new RuntimeException("본인만 게시글을 수정할 수 있습니다.");
+
+        // 2️⃣ 게시글 기본 정보 업데이트
+        postMapper.updatePostBasic(postId, request.getTitle(), request.getContent());
+
+        // 이미지 전체 교체
+        imageMapper.deleteImagesByPostId(postId);
+        if (images != null && images.size() > 0)  {
+            int order = 1;
+            for (MultipartFile file : images) {
+                if (file.isEmpty()) continue;
+                String imageUrl = s3Service.upload(file, "community/posts");
+                imageMapper.insertImage(postId, imageUrl, order++);
+            }
+        }
+
+        // 태그 전체 교체
+        tagMapper.deleteTagsByPostId(postId);
+        if (request.getTags() != null) {
+            for (String tag : request.getTags()) {
+                tagMapper.insertTag(postId, tag);
+            }
+        }
+
+        // 5️⃣ 투표 전체 교체 (없으면 삭제)
+        updateVote(postId, request.getVote());
+    }
+    private boolean isSameVote(VoteDetailResponseDto oldVote, VoteCreateRequestDto newVote) {
+
+        if (oldVote == null && newVote == null) return true;
+        if (oldVote == null || newVote == null) return false;
+
+        if (!oldVote.getQuestion().equals(newVote.getQuestion())) return false;
+        // 옵션 길이 다르면 다름
+        List<ProjectPostVoteOption> oldOptions = voteMapper.findOptionsByVoteId(oldVote.getVoteId());
+        List<String> newOptions = newVote.getOptions();
+        if (oldOptions.size() != newOptions.size()) return false;
+
+        // 옵션 내용 하나라도 다르면 다름
+        for (int i = 0; i < oldOptions.size(); i++) {
+            if (!oldOptions.get(i).getOptionText().equals(newOptions.get(i))) {
+                return false;
+            }
+        }
+
+        // 전부 동일
+        return true;
+    }
+
+    private void updateVote(Long postId, VoteCreateRequestDto vote) {
+
+        // 기존 voteId 조회
+        Long voteId = voteMapper.findVoteIdByPostId(postId);
+        VoteDetailResponseDto oldVote = voteMapper.findVoteByPostId(postId);
+        
+        if (isSameVote(oldVote, vote)) {
+            return;
+        }
+        
+        // 기존 투표가 있다면 삭제
+        if (voteId != null) {
+            voteResultMapper.deleteResultsByVoteId(voteId);
+            voteOptionMapper.deleteOptionsByVoteId(voteId);
+            voteMapper.deleteVote(voteId);
+        }
+        
+        if (vote != null) {
+            //투표 마스터 저장
+            ProjectPostVote voteEntity = new ProjectPostVote();
+            voteEntity.setPostId(postId);
+            voteEntity.setQuestion(vote.getQuestion());
+            voteEntity.setMultipleChoice(vote.getMultipleChoice() != null ? vote.getMultipleChoice() : false);
+            voteMapper.insertVote(voteEntity);
+
+            Long newvoteId = voteEntity.getVoteId();
+
+            // 투표 옵션 저장
+            int order = 1;
+            for (String option : vote.getOptions()) {
+                ProjectPostVoteOption optionEntity = new ProjectPostVoteOption();
+                optionEntity.setVoteId(newvoteId);
+                optionEntity.setOptionText(option);
+                optionEntity.setOrderNo(order++);
+                voteMapper.insertOption(optionEntity);
+            }
+        }
+        
+
+        
+    }
 
 }

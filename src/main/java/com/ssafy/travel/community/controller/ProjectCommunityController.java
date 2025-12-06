@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -78,6 +80,19 @@ public class ProjectCommunityController {
         Long userId = user.getUserId();
         postService.deletePost(postId, userId);
         return ResponseEntity.ok("게시글 삭제 완료");
+    }
+    
+    @PutMapping("/{postId}")
+    @Operation(summary = "커뮤니티 게시글 수정")
+    public ResponseEntity<?> updatePost(
+    		@PathVariable Long projectId,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestPart CreatePostRequestDto dto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) throws IOException {
+        postService.updatePost(projectId, postId, user.getUserId(), dto, images);
+        return ResponseEntity.ok("게시글 수정 완료");
     }
 
 }
