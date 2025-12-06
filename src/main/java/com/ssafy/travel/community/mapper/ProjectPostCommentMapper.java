@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.ssafy.travel.community.dto.CommentDto;
 
 @Mapper
-public interface PostCommentMapper {
-
+public interface ProjectPostCommentMapper {
     List<CommentDto> findCommentsByPostId(@Param("postId") Long postId);
+    int deleteCommentsByPostId(@Param("postId") Long postId);
 }

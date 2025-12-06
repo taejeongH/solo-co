@@ -41,5 +41,9 @@
         FROM project_post_vote v
         WHERE v.post_id = #{postId}
     </select>
+    
+    <delete id="deleteVote">
+    	DELETE FROM project_post_vote WHERE vote_id=#{voteId}
+    </delete>
 
 </mapper>

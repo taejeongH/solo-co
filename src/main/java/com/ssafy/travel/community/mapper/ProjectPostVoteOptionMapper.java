@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.ssafy.travel.community.dto.VoteOptionDto;
 
 @Mapper
-public interface PostVoteOptionMapper {
-
+public interface ProjectPostVoteOptionMapper {
     List<VoteOptionDto> findVoteOptions(@Param("voteId") Long voteId);
+    int deleteOptionsByVoteId(@Param("voteId") Long voteId);
 }

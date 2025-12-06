@@ -12,4 +12,5 @@ public interface ProjectPostImageMapper {
             @Param("sortOrder") int sortOrder);
 	
 	List<String> findImagesByPostId(@Param("postId") Long postId);
+	int deleteImagesByPostId(@Param("postId") Long postId);
 }

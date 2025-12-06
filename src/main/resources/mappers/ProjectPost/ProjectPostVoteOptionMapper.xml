@@ -2,12 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.ssafy.travel.community.mapper.PostVoteOptionMapper">
+<mapper namespace="com.ssafy.travel.community.mapper.ProjectPostVoteOptionMapper">
 
     <select id="findVoteOptions"
             parameterType="long"
             resultType="com.ssafy.travel.community.dto.VoteOptionDto">
-
         SELECT
             o.option_id AS optionId,
             o.option_text AS text,
@@ -19,7 +18,9 @@
         FROM project_post_vote_option o
         WHERE o.vote_id = #{voteId}
         ORDER BY o.option_id
-
     </select>
-
+	
+	<delete id="deleteOptionsByVoteId">
+    	DELETE FROM project_post_vote_option WHERE vote_id=#{voteId}
+    </delete>
 </mapper>

@@ -38,5 +38,15 @@
 	    JOIN users u ON p.author_id = u.user_id
 	    WHERE p.post_id = #{postId}
 	</select>
+	
+	<delete id="deletePost">
+    	DELETE FROM project_post WHERE post_id=#{postId}
+    </delete>
+    
+    <select id="findPostAuthorId" resultType="long">
+	    SELECT author_id
+	    FROM project_post
+	    WHERE post_id = #{postId}
+	</select>
 
 </mapper>

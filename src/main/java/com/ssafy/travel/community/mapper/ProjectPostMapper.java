@@ -14,4 +14,6 @@ public interface ProjectPostMapper {
 	void insertPost(ProjectPost post);
 	List<ProjectPostListResponseDto> findAllPostsByProjectId(Long projectId);
 	ProjectPostDetailResponseDto findPostDetail(@Param("postId") Long postId);
+	Long findPostAuthorId(@Param("postId") Long postId);
+	int deletePost(@Param("postId") Long postId);
 }

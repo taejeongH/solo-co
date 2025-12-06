@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,4 +68,16 @@ public class ProjectCommunityController {
                 postService.getPostDetail(projectId, postId, userId)
         );
     }
+    
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "커뮤니티 게시글 삭제")
+    public ResponseEntity<?> deletePost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        Long userId = user.getUserId();
+        postService.deletePost(postId, userId);
+        return ResponseEntity.ok("게시글 삭제 완료");
+    }
+
 }

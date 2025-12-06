@@ -14,5 +14,9 @@
 	    FROM project_post_image
 	    WHERE post_id = #{postId}
 	</select>
+	
+	<delete id="deleteImagesByPostId">
+    	DELETE FROM project_post_image WHERE post_id=#{postId}
+    </delete>
 
 </mapper>

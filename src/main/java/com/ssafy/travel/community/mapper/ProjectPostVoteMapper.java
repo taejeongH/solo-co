@@ -19,5 +19,6 @@ public interface ProjectPostVoteMapper {
     Boolean hasUserVoted(
             @Param("voteId") Long voteId,
             @Param("userId") Long userId
-        );
+    );
+    int deleteVote(@Param("voteId") Long voteId);
 }

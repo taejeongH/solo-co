@@ -19,12 +19,13 @@ import com.ssafy.travel.community.dto.VoteOptionDto;
 import com.ssafy.travel.community.entity.ProjectPost;
 import com.ssafy.travel.community.entity.ProjectPostVote;
 import com.ssafy.travel.community.entity.ProjectPostVoteOption;
-import com.ssafy.travel.community.mapper.PostCommentMapper;
-import com.ssafy.travel.community.mapper.PostVoteOptionMapper;
+import com.ssafy.travel.community.mapper.ProjectPostCommentMapper;
 import com.ssafy.travel.community.mapper.ProjectPostImageMapper;
 import com.ssafy.travel.community.mapper.ProjectPostMapper;
 import com.ssafy.travel.community.mapper.ProjectPostTagMapper;
 import com.ssafy.travel.community.mapper.ProjectPostVoteMapper;
+import com.ssafy.travel.community.mapper.ProjectPostVoteOptionMapper;
+import com.ssafy.travel.community.mapper.ProjectPostVoteResultMapper;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
@@ -41,8 +42,9 @@ public class CommunityPostService {
     private final ProjectPostImageMapper imageMapper;
     private final ProjectPostTagMapper tagMapper;
     private final ProjectPostVoteMapper voteMapper;
-    private final PostVoteOptionMapper voteOptionMapper;
-    private final PostCommentMapper commentMapper;
+    private final ProjectPostVoteOptionMapper voteOptionMapper;
+    private final ProjectPostVoteResultMapper voteResultMapper;
+    private final ProjectPostCommentMapper commentMapper;
     private final S3Service s3Service;
     
     void checkPermission(Long projectId, Long userId) {
@@ -141,13 +143,8 @@ public class CommunityPostService {
         // 게시글 기본 정보
     	ProjectPostDetailResponseDto post = postMapper.findPostDetail(postId);
 
-        // 이미지
         post.setImages(imageMapper.findImagesByPostId(postId));
-
-        // 태그
         post.setTags(tagMapper.findTagsByPostId(postId));
-
-        // 투표
         VoteDetailDto vote = voteMapper.findVoteByPostId(postId);
 
         if (vote != null) {
@@ -169,6 +166,32 @@ public class CommunityPostService {
         post.setComments(commentMapper.findCommentsByPostId(postId));
 
         return post;
+    }
+    
+    public void deletePost(Long postId, Long userId) {
+
+        // 게시글 존재 & 작성자 확인
+    	Long authorId = postMapper.findPostAuthorId(postId);
+        if (authorId == null)
+            throw new RuntimeException("존재하지 않는 게시글입니다.");
+
+        if (!authorId.equals(userId))
+            throw new RuntimeException("본인이 작성한 게시글만 삭제할 수 있습니다.");
+
+        commentMapper.deleteCommentsByPostId(postId);
+        tagMapper.deleteTagsByPostId(postId);
+        imageMapper.deleteImagesByPostId(postId);
+
+        // 투표 관련 삭제
+        Long voteId = voteMapper.findVoteIdByPostId(postId);
+        if (voteId != null) {
+            voteResultMapper.deleteResultsByVoteId(voteId);
+            voteOptionMapper.deleteOptionsByVoteId(voteId);
+            voteMapper.deleteVote(voteId);
+        }
+
+        // 게시글 삭제
+        postMapper.deletePost(postId);
     }
 
 }

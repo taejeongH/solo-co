@@ -14,5 +14,9 @@
 	    FROM project_post_tag
 	    WHERE post_id = #{postId}
 	</select>
+	
+	<delete id="deleteTagsByPostId">
+    	DELETE FROM project_post_tag WHERE post_id=#{postId}
+    </delete>
 
 </mapper>

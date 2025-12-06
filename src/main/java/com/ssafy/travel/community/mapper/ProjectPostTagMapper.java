@@ -10,4 +10,5 @@ public interface ProjectPostTagMapper {
 	void insertTag(@Param("postId") Long postId,
             @Param("tag") String tag);
 	List<String> findTagsByPostId(Long postId);
+	int deleteTagsByPostId(@Param("postId") Long postId);
 }
