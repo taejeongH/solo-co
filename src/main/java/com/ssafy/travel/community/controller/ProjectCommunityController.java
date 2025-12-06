@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.global.security.CustomUserDetails;
+import com.ssafy.travel.community.dto.request.CommentCreateRequestDto;
 import com.ssafy.travel.community.dto.request.CreatePostRequestDto;
+import com.ssafy.travel.community.entity.ProjectPostComment;
+import com.ssafy.travel.community.service.CommunityCommentService;
 import com.ssafy.travel.community.service.CommunityPostService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class ProjectCommunityController {
 	
 	private final CommunityPostService postService;
+	private final CommunityCommentService commentService;
 	
 	@PostMapping
     @Operation(summary = "커뮤니티 게시글 작성")
@@ -93,6 +97,18 @@ public class ProjectCommunityController {
     ) throws IOException {
         postService.updatePost(projectId, postId, user.getUserId(), dto, images);
         return ResponseEntity.ok("게시글 수정 완료");
+    }
+    
+    @PostMapping("/{postId}/comments")
+    @Operation(summary = "커뮤니티 댓글 작성")
+    public ResponseEntity<?> createComment(
+    		@PathVariable Long projectId,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody CommentCreateRequestDto request
+    ) {
+    	ProjectPostComment created = commentService.createComment(projectId, postId, user.getUserId(), request);
+        return ResponseEntity.ok(created);
     }
 
 }

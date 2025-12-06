@@ -22,5 +22,25 @@
     <delete id="deleteCommentsByPostId">
     	DELETE FROM project_post_comment WHERE post_id=#{postId}
     </delete>
-
+    
+    <insert id="insertComment">
+	    INSERT INTO project_post_comment (post_id, user_id, content, created_at, updated_at)
+	    VALUES (#{postId}, #{userId}, #{content}, NOW(), NOW());
+	</insert>
+	
+	<select id="getLastInsertId" resultType="long">
+	    SELECT LAST_INSERT_ID()
+	</select>
+	
+	<select id="findCommentByCommentId" resultType="com.ssafy.travel.community.entity.ProjectPostComment">
+	    SELECT 
+	        c.comment_id AS commentId,
+            c.user_id AS userId,
+            c.post_id AS postId,
+            c.content AS content,
+            DATE_FORMAT(c.created_at, '%Y-%m-%d %H:%i') AS createdAt,
+            DATE_FORMAT(c.updated_at, '%Y-%m-%d %H:%i') AS updatedAt
+	    FROM project_post_comment c
+	    WHERE c.comment_id = #{commentId}
+	</select>
 </mapper>

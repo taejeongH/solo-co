@@ -6,9 +6,17 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.travel.community.dto.response.CommentResponseDto;
+import com.ssafy.travel.community.entity.ProjectPostComment;
 
 @Mapper
 public interface ProjectPostCommentMapper {
     List<CommentResponseDto> findCommentsByPostId(@Param("postId") Long postId);
     int deleteCommentsByPostId(@Param("postId") Long postId);
+    int insertComment(
+            @Param("postId") Long postId,
+            @Param("userId") Long userId,
+            @Param("content") String content
+    );
+    Long getLastInsertId();
+    ProjectPostComment findCommentByCommentId(@Param("commentId") Long commentId);
 }
