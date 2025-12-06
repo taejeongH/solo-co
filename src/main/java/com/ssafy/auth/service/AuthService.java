@@ -8,6 +8,8 @@ import com.ssafy.auth.dto.LoginResponseDto;
 import com.ssafy.auth.dto.SignupRequestDto;
 import com.ssafy.auth.entity.User;
 import com.ssafy.auth.mapper.AuthMapper;
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.global.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -23,12 +25,8 @@ public class AuthService {
     public LoginResponseDto login(LoginRequestDto requestDto) {
         User user = userMapper.findByUsername(requestDto.getUsername());
 
-        if (user == null) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
-        }
-        
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        if (user == null || !passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_LOGIN);
         }
 
         String token = jwtTokenProvider.createToken(user.getUserId(), user.getUsername(), user.getEmail());
@@ -44,7 +42,7 @@ public class AuthService {
     public void signup(SignupRequestDto dto) {
         // username 중복 체크
         if (userMapper.findByUsername(dto.getUsername()) != null) {
-            throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+            throw new CustomException(ErrorCode.USERNAME_ALREADY_EXISTS);
         }
 
         // 비밀번호 암호화

@@ -7,6 +7,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.travel.ai.dto.AutoGenerateResponse;
 import com.ssafy.travel.ai.service.AIService;
 import com.ssafy.travel.itinerary.dto.ItineraryApplyRequestDto;
@@ -32,7 +34,7 @@ public class TravelItineraryService {
 
         // 1. 프로젝트 조회
         TravelProject project = projectMapper.findById(projectId);
-        if (project == null) throw new RuntimeException("잘못된 프로젝트 ID");
+        if (project == null) throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
 
         // 2. 여행 일수 계산
         int tripDays = calculateTripDays(project);
@@ -40,7 +42,7 @@ public class TravelItineraryService {
         // 3. 장소 조회
         List<TravelProjectPlace> places = placeMapper.findByProjectId(projectId);
         if (places.isEmpty()) {
-            throw new RuntimeException("장소를 먼저 추가하세요.");
+        	throw new CustomException(ErrorCode.PLACE_REQUIRED_FOR_AI);
         }
 
         // 4. AI 추천 생성 (🔥 tripDays도 전달)

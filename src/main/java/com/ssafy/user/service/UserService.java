@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.auth.entity.User;
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.global.service.S3Service;
 import com.ssafy.user.dto.UserInfoResponseDto;
 import com.ssafy.user.dto.UserResponseDto;
@@ -26,7 +28,7 @@ public class UserService {
     public UserResponseDto updateUser(Long userId, UserUpdateRequestDto dto, MultipartFile file) throws IOException {
         User user = userMapper.findById(userId);
         if (user == null) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         String nickname = dto.getName() != null ? dto.getName() : user.getName();
@@ -56,7 +58,7 @@ public class UserService {
     public void deleteUser(Long userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        	throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         userMapper.deleteUser(userId);
@@ -65,7 +67,7 @@ public class UserService {
     public UserInfoResponseDto getMyInfo(Long userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        	throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         UserInfoResponseDto dto = new UserInfoResponseDto();

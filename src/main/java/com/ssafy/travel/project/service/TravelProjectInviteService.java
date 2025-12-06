@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.travel.project.dto.InviteLinkResponseDto;
 import com.ssafy.travel.project.dto.InviteValidationResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
@@ -32,12 +34,12 @@ public class TravelProjectInviteService {
     	//project가 존재한지 확인
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
-            throw new RuntimeException("존재하지 않는 프로젝트입니다.");
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
 
         //project 소유자인지 확인
         if (!project.getOwnerId().equals(userId)) {
-            throw new RuntimeException("프로젝트 소유자만 초대 링크를 생성할 수 있습니다.");
+            throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
         }
         
         //초대 링크가 이미 존재하는 지 확인
@@ -84,7 +86,7 @@ public class TravelProjectInviteService {
 
         TravelProjectInvite invite = inviteMapper.findByCode(code);
         if (invite == null) {
-            throw new RuntimeException("유효하지 않은 초대 코드입니다.");
+            throw new CustomException(ErrorCode.INVALID_INVITE_CODE);
         }
 
         TravelProject project = projectMapper.findById(invite.getProjectId());
@@ -103,7 +105,7 @@ public class TravelProjectInviteService {
 
         TravelProjectInvite invite = inviteMapper.findByCode(inviteCode);
         if (invite == null) {
-            throw new RuntimeException("유효하지 않은 초대 코드");
+            throw new CustomException(ErrorCode.INVALID_INVITE_CODE);
         }
 
         Long projectId = invite.getProjectId();
@@ -111,7 +113,7 @@ public class TravelProjectInviteService {
         // 이미 참여한 사용자면 추가 안 함
         Integer exists = inviteMapper.existsMember(projectId, userId);
         if (exists != null && exists > 0) {
-            throw new RuntimeException("이미 참여한 사용자입니다.");
+            throw new CustomException(ErrorCode.PROJECT_MEMBER_ALREADY_EXISTS);
         }
 
         // 참여 추가

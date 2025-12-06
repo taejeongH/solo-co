@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.global.service.S3Service;
 import com.ssafy.travel.itinerary.mapper.TravelItineraryMapper;
 import com.ssafy.travel.place.mapper.TravelProjectPlaceMapper;
@@ -121,12 +123,12 @@ public class TravelProjectService {
         // 1. 기존 프로젝트 조회
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
-            throw new IllegalArgumentException("프로젝트가 존재하지 않습니다.");
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
 
         // 2. 권한 체크
         if (!project.getOwnerId().equals(userId)) {
-            throw new IllegalArgumentException("프로젝트 수정 권한이 없습니다.");
+            throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
         }
 
         // 3. 새로운 썸네일 파일 업로드
@@ -165,12 +167,12 @@ public class TravelProjectService {
         // 1) 요청자가 프로젝트 멤버인지 확인
         TravelProjectMember requester = projectMemberMapper.findOne(projectId, requesterId);
         if (requester == null) {
-            throw new RuntimeException("프로젝트에 참여하지 않은 사용자입니다.");
+        	throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         // 2) OWNER인지 확인
         if (!"OWNER".equals(requester.getRole())) {
-            throw new RuntimeException("프로젝트 삭제는 OWNER만 가능합니다.");
+        	throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
         }
 
         // 3) 순서대로 관련 데이터 제거

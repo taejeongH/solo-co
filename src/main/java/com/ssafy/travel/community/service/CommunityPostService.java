@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.global.service.S3Service;
 import com.ssafy.travel.community.dto.request.CreatePostRequestDto;
 import com.ssafy.travel.community.dto.request.VoteCreateRequestDto;
@@ -51,12 +53,12 @@ public class CommunityPostService {
     	//project가 존재한지 확인
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
-            throw new RuntimeException("존재하지 않는 프로젝트입니다.");
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
         
         //멤버 권한 체크
         if (!memberMapper.isMember(projectId, userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 접근 권한이 없습니다.");
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
     
@@ -172,11 +174,9 @@ public class CommunityPostService {
 
         // 게시글 존재 & 작성자 확인
     	Long authorId = postMapper.findPostAuthorId(postId);
-        if (authorId == null)
-            throw new RuntimeException("존재하지 않는 게시글입니다.");
-
-        if (!authorId.equals(userId))
-            throw new RuntimeException("본인이 작성한 게시글만 삭제할 수 있습니다.");
+        if (authorId == null || !authorId.equals(userId)) {
+        	throw new CustomException(ErrorCode.POST_NOT_FOUND);
+        }
 
         commentMapper.deleteCommentsByPostId(postId);
         tagMapper.deleteTagsByPostId(postId);
@@ -199,11 +199,9 @@ public class CommunityPostService {
         // 작성자 검증
     	checkPermission(projectId, userId);
         Long authorId = postMapper.findPostAuthorId(postId);
-        if (authorId == null)
-            throw new RuntimeException("존재하지 않는 게시글입니다.");
-
-        if (!authorId.equals(userId))
-            throw new RuntimeException("본인만 게시글을 수정할 수 있습니다.");
+        if (authorId == null || !authorId.equals(userId)) {
+        	throw new CustomException(ErrorCode.POST_NOT_FOUND);
+        }
 
         // 2️⃣ 게시글 기본 정보 업데이트
         postMapper.updatePostBasic(postId, request.getTitle(), request.getContent());

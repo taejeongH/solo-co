@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.travel.project.dto.TravelProjectMemberResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.entity.TravelProjectMember;
@@ -26,12 +28,12 @@ public class TravelProjectMemberService {
         // 1. 프로젝트 유효성 체크
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "프로젝트를 찾을 수 없습니다.");
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
 
         // 2. 멤버 권한 체크
         if (!memberMapper.isMember(projectId, userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 접근 권한이 없습니다.");
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
     	
     	
@@ -45,17 +47,17 @@ public class TravelProjectMemberService {
         TravelProjectMember requester = memberMapper.findOne(projectId, requesterId);
 
         if (requester == null) {
-            throw new RuntimeException("해당 프로젝트의 멤버만 이 작업을 수행할 수 있습니다.");
+        	throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         // 2) OWNER인지 체크
         if (!"OWNER".equals(requester.getRole())) {
-            throw new RuntimeException("해당 작업은 OWNER만 수행할 수 있습니다.");
+            throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
         }
 
         // 3) OWNER는 자기 자신 삭제 불가
         if (memberId.equals(requesterId)) {
-            throw new RuntimeException("OWNER는 본인을 강퇴할 수 없습니다.");
+            throw new CustomException(ErrorCode.PROJECT_OWNER_CANNOT_REMOVE_SELF);
         }
 
         // 4) 실제 삭제

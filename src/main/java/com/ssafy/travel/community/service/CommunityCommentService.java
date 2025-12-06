@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.travel.community.dto.request.CommentCreateRequestDto;
 import com.ssafy.travel.community.entity.ProjectPostComment;
 import com.ssafy.travel.community.mapper.ProjectPostCommentMapper;
@@ -27,17 +29,17 @@ public class CommunityCommentService {
     	//project가 존재한지 확인
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
-            throw new RuntimeException("존재하지 않는 프로젝트입니다.");
+        	throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
         
         //멤버 권한 체크
         if (!memberMapper.isMember(projectId, userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 접근 권한이 없습니다.");
+        	throw new CustomException(ErrorCode.FORBIDDEN);
         }
         
         //게시글 존재 여부 확인
         if (postMapper.findPostAuthorId(postId) == null) {
-            throw new RuntimeException("존재하지 않는 게시글입니다.");
+        	throw new CustomException(ErrorCode.POST_NOT_FOUND);
         }
     }
     
