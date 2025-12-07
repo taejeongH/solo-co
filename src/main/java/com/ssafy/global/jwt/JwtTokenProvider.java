@@ -1,19 +1,31 @@
 package com.ssafy.global.jwt;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtTokenProvider {
 
-    private final Key secretKey = Keys.hmacShaKeyFor("MY_SUPER_SECRET_KEY_1234567890_ABCDE".getBytes());
+	@Value("${jwt.secret}")
+	private String secret;
+	
+	private Key secretKey;
+
+	@PostConstruct
+	public void init() {
+	    secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+	}
+	
     private final long EXPIRATION = 1000L * 60 * 60 * 24; // 24시간
 
     /**

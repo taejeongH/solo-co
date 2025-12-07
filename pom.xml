@@ -107,6 +107,11 @@
 		    <version>2.37.3</version>
 		    <scope>compile</scope>
 		</dependency>
+		<dependency>
+		    <groupId>me.paulschwarz</groupId>
+		    <artifactId>spring-dotenv</artifactId>
+		    <version>4.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
