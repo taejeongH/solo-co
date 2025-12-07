@@ -65,11 +65,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    @Bean
-    public HttpFirewall allowDoubleSlash() {
-        StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowDoubleSlash(true);
-        return firewall;
-    }
 }
