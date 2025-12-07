@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.community.dto.request.CommentCreateRequestDto;
+import com.ssafy.travel.community.dto.request.CommentUpdateRequestDto;
 import com.ssafy.travel.community.dto.request.CreatePostRequestDto;
 import com.ssafy.travel.community.entity.ProjectPostComment;
 import com.ssafy.travel.community.service.CommunityCommentService;
@@ -111,4 +112,16 @@ public class ProjectCommunityController {
         return ResponseEntity.ok(created);
     }
 
+    @PutMapping("/{postId}/comments/{commentId}")
+    @Operation(summary = "커뮤니티 댓글 수정")
+    public ResponseEntity<?> updateComment(
+            @PathVariable Long projectId,
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody CommentUpdateRequestDto request
+    ) {
+        ProjectPostComment updated = commentService.updateComment(projectId, postId, commentId, user.getUserId(), request);
+        return ResponseEntity.ok(updated);
+    }
 }

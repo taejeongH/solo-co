@@ -43,4 +43,12 @@
 	    FROM project_post_comment c
 	    WHERE c.comment_id = #{commentId}
 	</select>
+	
+	<update id="updateComment">
+	    UPDATE project_post_comment
+	    SET
+	        content = #{content},
+	        updated_at = NOW()
+	    WHERE comment_id = #{commentId}
+	</update>
 </mapper>

@@ -17,6 +17,10 @@ public interface ProjectPostCommentMapper {
             @Param("userId") Long userId,
             @Param("content") String content
     );
+    void updateComment(
+            @Param("commentId") Long commentId,
+            @Param("content") String content
+    );
     Long getLastInsertId();
     ProjectPostComment findCommentByCommentId(@Param("commentId") Long commentId);
 }
