@@ -6,6 +6,20 @@
 	    WHERE vote_id = #{voteId}
 	</delete>
 	
-
-
+	<select id="findVoteByUser" resultType="com.ssafy.travel.community.entity.ProjectPostVoteResult">
+		SELECT
+			result_id as resultId,
+			vote_id as voteId,
+			user_id as userId,
+			option_id as optionId,
+			voted_at as votedAt
+		FROM project_post_vote_result
+		WHERE vote_id = #{voteId} AND user_id = #{userId}
+	</select>
+	
+	<insert id="insertVoteResult">
+		INSERT INTO project_post_vote_result (vote_id, user_id, option_id, voted_at)
+		VALUES (#{voteId}, #{userId}, #{optionId}, NOW())
+	</insert>
+	
 </mapper>

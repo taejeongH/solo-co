@@ -21,9 +21,11 @@ import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.community.dto.request.CommentCreateRequestDto;
 import com.ssafy.travel.community.dto.request.CommentUpdateRequestDto;
 import com.ssafy.travel.community.dto.request.CreatePostRequestDto;
+import com.ssafy.travel.community.dto.request.VoteRequestDto;
 import com.ssafy.travel.community.entity.ProjectPostComment;
 import com.ssafy.travel.community.service.CommunityCommentService;
 import com.ssafy.travel.community.service.CommunityPostService;
+import com.ssafy.travel.community.service.CommunityVoteService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,6 +39,7 @@ public class ProjectCommunityController {
 	
 	private final CommunityPostService postService;
 	private final CommunityCommentService commentService;
+	private final CommunityVoteService voteService;
 	
 	@PostMapping
     @Operation(summary = "커뮤니티 게시글 작성")
@@ -135,5 +138,17 @@ public class ProjectCommunityController {
     ) {
         commentService.deleteComment(projectId, postId, commentId, user.getUserId());
         return ResponseEntity.ok("댓글이 삭제되었습니다.");
+    }
+
+    @PostMapping("/{postId}/vote")
+    @Operation(summary = "게시글 투표 참여")
+    public ResponseEntity<?> castVote(
+            @PathVariable Long projectId,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody VoteRequestDto request
+    ) {
+        voteService.castVote(projectId, postId, user.getUserId(), request.getOptionId());
+        return ResponseEntity.ok("투표가 완료되었습니다.");
     }
 }
