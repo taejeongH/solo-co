@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  backend:
+    image: solo-backend:latest
+    container_name: solo-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mydb.ct6cy848g10j.us-east-2.rds.amazonaws.com:3306/soloco?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:8080"
+    restart: always
