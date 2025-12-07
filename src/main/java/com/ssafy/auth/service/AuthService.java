@@ -73,6 +73,11 @@ public class AuthService {
         userMapper.insertUser(user);
     }
 
+    @Transactional
+    public void logout(Long userId) {
+        userMapper.updateRefreshToken(userId, null);
+    }
+
     @Transactional(readOnly = true)
     public TokenDto reissueToken(String refreshToken) {
         // 1. Refresh Token 유효성 검증 (만료, 손상 등)
