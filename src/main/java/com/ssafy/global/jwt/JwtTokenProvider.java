@@ -7,17 +7,31 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
 	@Value("${jwt.secret}")
 	private String secret;
+
+	@Value("${jwt.access-expiration-time}")
+	private long accessExpiration;
+
+	@Value("${jwt.refresh-expiration-time}")
+	private long refreshExpiration;
 	
 	private Key secretKey;
 
@@ -26,68 +40,59 @@ public class JwtTokenProvider {
 	    secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 	}
 	
-    private final long EXPIRATION = 1000L * 60 * 60 * 24; // 24시간
-
-    /**
-     * 🔥 토큰 생성
-     * subject = username (로그인 ID)
-     * claims = userId(PK), email(optional)
-     */
-    public String createToken(Long userId, String username, String email) {
+    public String createAccessToken(Long userId, String username, String email) {
         Date now = new Date();
 
         return Jwts.builder()
-                .setSubject(username)            // ⭐ 인증 기준이 되는 username
-                .claim("userId", userId)         // 내부 사용 PK
-                .claim("email", email)           // 부가 정보
+                .setSubject(username)
+                .claim("userId", userId)
+                .claim("email", email)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + EXPIRATION))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .setExpiration(new Date(now.getTime() + accessExpiration))
+                .signWith(secretKey)
                 .compact();
     }
 
-    /** 🔥 토큰 유효성 검사 */
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+	public String createRefreshToken(String username) {
+		Date now = new Date();
+
+		return Jwts.builder()
+				.setSubject(username)
+				.setIssuedAt(now)
+				.setExpiration(new Date(now.getTime() + refreshExpiration))
+				.signWith(secretKey)
+				.compact();
+	}
+
+    public void validateToken(String token) {
+		parseClaims(token);
     }
 
-    /** 🔥 username 가져오기 (subject) */
     public String getUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();   // subject = username
+        return parseClaims(token).getSubject();
     }
 
-    /** 🔥 userId 가져오기 */
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("userId", Long.class);
+        return parseClaims(token).get("userId", Long.class);
     }
 
-    /** 🔥 email 가져오기 */
     public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("email", String.class);
+        return parseClaims(token).get("email", String.class);
     }
+
+	private Claims parseClaims(String token) {
+		try {
+			return Jwts.parser()
+					.verifyWith((javax.crypto.SecretKey) secretKey)
+					.build()
+					.parseSignedClaims(token)
+					.getPayload();
+		} catch (ExpiredJwtException e) {
+			log.info("만료된 토큰입니다. {}", e.getMessage());
+			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+		} catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+			log.info("유효하지 않은 토큰입니다. {}", e.getMessage());
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+	}
 }

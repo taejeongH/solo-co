@@ -7,7 +7,8 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     name VARCHAR(50),
     profile_image VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    refresh_token VARCHAR(255)
 );
 
 CREATE TABLE travel_project (

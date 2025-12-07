@@ -15,6 +15,8 @@ public enum ErrorCode {
 
     // 401 Unauthorized
     INVALID_LOGIN(401, "4010", "등록되지 않은 이메일 또는 비밀번호가 잘못 입력되었습니다."),
+    EXPIRED_TOKEN(401, "4011", "만료된 토큰입니다."),
+    INVALID_TOKEN(401, "4012", "유효하지 않은 토큰입니다."),
 
     // 403 Forbidden
     FORBIDDEN(403, "4030", "접근 권한이 없습니다."),

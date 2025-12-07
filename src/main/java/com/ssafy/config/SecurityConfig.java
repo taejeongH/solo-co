@@ -4,10 +4,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 import com.ssafy.global.filter.JwtAuthenticationFilter;
 
@@ -25,6 +28,9 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
+            
+            // 🔥 세션을 사용하지 않도록 STATELESS로 설정
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", 
@@ -34,7 +40,7 @@ public class SecurityConfig {
                         "/css/**", "/js/**", "/images/**"
                 ).permitAll()
 
-                .requestMatchers("/api/auth/login", "/api/auth/signup").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/reissue").permitAll()
 
                 // 🔥 초대 링크는 검증만 공개 가능하게 해도 됨
                 .requestMatchers("/api/travels/invite/validate").permitAll()
@@ -58,5 +64,12 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public HttpFirewall allowDoubleSlash() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowDoubleSlash(true);
+        return firewall;
     }
 }

@@ -9,13 +9,33 @@
             password,
             email,
             name,
-            profile_image
+            profile_image,
+            refresh_token
         FROM users
         WHERE username = #{username}
+    </select>
+    
+    <select id="findByRefreshToken" parameterType="string" resultType="com.ssafy.auth.entity.User">
+        SELECT
+            user_id as userid,
+            username,
+            password,
+            email,
+            name,
+            profile_image,
+            refresh_token
+        FROM users
+        WHERE refresh_token = #{refreshToken}
     </select>
     
     <insert id="insertUser" parameterType="com.ssafy.auth.entity.User">
 	    INSERT INTO users (username, password, email, name, profile_image)
 	    VALUES (#{username}, #{password}, #{email}, #{name}, #{profileImage})
 	</insert>
+	
+	<update id="updateRefreshToken">
+		UPDATE users
+		SET refresh_token = #{refreshToken}
+		WHERE user_id = #{userId}
+	</update>
 </mapper>
