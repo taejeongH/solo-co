@@ -51,4 +51,8 @@
 	        updated_at = NOW()
 	    WHERE comment_id = #{commentId}
 	</update>
+	
+	<delete id="deleteComment">
+	    DELETE FROM project_post_comment WHERE comment_id = #{commentId}
+	</delete>
 </mapper>

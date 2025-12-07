@@ -79,4 +79,24 @@ public class CommunityCommentService {
         // 4. 수정된 댓글 정보 반환
         return postCommentMapper.findCommentByCommentId(commentId);
     }
+    
+    @Transactional
+    public void deleteComment(Long projectId, Long postId, Long commentId, Long userId) {
+        // 0. 프로젝트, 게시글, 멤버십 권한 확인
+        checkPermission(projectId, userId, postId);
+
+        // 1. 댓글 조회
+        ProjectPostComment comment = postCommentMapper.findCommentByCommentId(commentId);
+        if (comment == null) {
+            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+
+        // 2. 권한 확인 (본인만 삭제 가능)
+        if (!comment.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN, "댓글을 삭제할 권한이 없습니다.");
+        }
+
+        // 3. 댓글 삭제
+        postCommentMapper.deleteComment(commentId);
+    }
 }

@@ -124,4 +124,16 @@ public class ProjectCommunityController {
         ProjectPostComment updated = commentService.updateComment(projectId, postId, commentId, user.getUserId(), request);
         return ResponseEntity.ok(updated);
     }
+
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    @Operation(summary = "커뮤니티 댓글 삭제")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable Long projectId,
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        commentService.deleteComment(projectId, postId, commentId, user.getUserId());
+        return ResponseEntity.ok("댓글이 삭제되었습니다.");
+    }
 }

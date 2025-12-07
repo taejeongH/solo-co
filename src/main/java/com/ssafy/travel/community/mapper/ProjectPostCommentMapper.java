@@ -21,6 +21,7 @@ public interface ProjectPostCommentMapper {
             @Param("commentId") Long commentId,
             @Param("content") String content
     );
+    void deleteComment(@Param("commentId") Long commentId);
     Long getLastInsertId();
     ProjectPostComment findCommentByCommentId(@Param("commentId") Long commentId);
 }
