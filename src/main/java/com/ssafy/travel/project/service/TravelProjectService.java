@@ -66,6 +66,7 @@ public class TravelProjectService {
             dto.setLocation(p.getLocation());
             dto.setProjectType(p.getProjectType());
             dto.setStatus(status);
+            dto.setMemberCount(projectMemberMapper.countMembersByProjectId(p.getProjectId()));
             
             result.add(dto);
         }

@@ -44,6 +44,12 @@
 	      AND user_id = #{userId}
 	</select>
 	
+	<select id="countMembersByProjectId" resultType="int">
+	    SELECT COUNT(*)
+	    FROM project_member
+	    WHERE project_id = #{projectId}
+	</select>
+	
 	<delete id="deleteAllByProjectId">
 	    DELETE FROM project_member WHERE project_id = #{projectId}
 	</delete>

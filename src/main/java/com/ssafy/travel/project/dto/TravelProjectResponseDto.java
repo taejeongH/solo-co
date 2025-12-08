@@ -13,4 +13,5 @@ public class TravelProjectResponseDto {
     private String endDate;
     private String thumbnail;
     private String status; //여행 상태
+    private int memberCount;
 }
