@@ -161,5 +161,16 @@ public class ProjectCommunityController {
     		) {
     	return ResponseEntity.ok(voteService.getVoteResult(projectId, postId, user.getUserId()));
     }
+    
+    @DeleteMapping("/{postId}/vote/cancel")
+    @Operation(summary = "게시글 투표 취소")
+    public ResponseEntity<?> cancelVote(
+            @PathVariable Long projectId,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        voteService.cancelVote(projectId, postId, user.getUserId());
+        return ResponseEntity.ok("투표가 취소되었습니다.");
+    }
 }
 

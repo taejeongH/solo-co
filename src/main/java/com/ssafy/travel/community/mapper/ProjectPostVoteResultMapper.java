@@ -12,4 +12,5 @@ public interface ProjectPostVoteResultMapper {
     void insertVoteResult(@Param("voteId") Long voteId, @Param("userId") Long userId, @Param("optionId") Long optionId);
     int countTotalVotes(@Param("voteId") Long voteId);
     int countVotesByOption(@Param("optionId") Long optionId);
+    int deleteVoteByUser(@Param("voteId") Long voteId, @Param("userId") Long userId);
 }

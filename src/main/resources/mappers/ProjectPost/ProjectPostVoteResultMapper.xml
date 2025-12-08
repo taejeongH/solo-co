@@ -33,5 +33,10 @@
         FROM project_post_vote_result
         WHERE option_id = #{optionId}
     </select>
+    
+    <delete id="deleteVoteByUser">
+    	DELETE FROM project_post_vote_result
+    	WHERE vote_id = #{voteId} AND user_id = #{userId}
+    </delete>
 	
 </mapper>
