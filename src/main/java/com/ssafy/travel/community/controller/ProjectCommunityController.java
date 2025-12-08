@@ -151,4 +151,15 @@ public class ProjectCommunityController {
         voteService.castVote(projectId, postId, user.getUserId(), request.getOptionId());
         return ResponseEntity.ok("투표가 완료되었습니다.");
     }
+    
+    @GetMapping("/{postId}/vote/result")
+    @Operation(summary = "게시글 투표 결과 조회")
+    public ResponseEntity<?> getVoteResult(
+    		@PathVariable Long projectId,
+    		@PathVariable Long postId,
+    		@AuthenticationPrincipal CustomUserDetails user
+    		) {
+    	return ResponseEntity.ok(voteService.getVoteResult(projectId, postId, user.getUserId()));
+    }
 }
+

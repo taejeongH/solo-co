@@ -11,6 +11,25 @@ import com.ssafy.travel.community.mapper.ProjectPostMapper;
 import com.ssafy.travel.community.mapper.ProjectPostVoteOptionMapper;
 import com.ssafy.travel.community.mapper.ProjectPostVoteResultMapper;
 import com.ssafy.travel.project.entity.TravelProject;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
+import com.ssafy.travel.community.dto.response.VoteOptionResultDto;
+import com.ssafy.travel.community.dto.response.VoteResultDto;
+import com.ssafy.travel.community.entity.ProjectPostVote;
+import com.ssafy.travel.community.entity.ProjectPostVoteOption;
+import com.ssafy.travel.community.entity.ProjectPostVoteResult;
+import com.ssafy.travel.community.mapper.ProjectPostMapper;
+import com.ssafy.travel.community.mapper.ProjectPostVoteMapper;
+import com.ssafy.travel.community.mapper.ProjectPostVoteOptionMapper;
+import com.ssafy.travel.community.mapper.ProjectPostVoteResultMapper;
+import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
 
@@ -23,6 +42,7 @@ public class CommunityVoteService {
     private final TravelProjectMapper projectMapper;
     private final ProjectPostMapper postMapper;
     private final TravelProjectMemberMapper memberMapper;
+    private final ProjectPostVoteMapper voteMapper;
     private final ProjectPostVoteOptionMapper voteOptionMapper;
     private final ProjectPostVoteResultMapper voteResultMapper;
 
@@ -62,5 +82,38 @@ public class CommunityVoteService {
 
         // 4. 투표 결과 저장
         voteResultMapper.insertVoteResult(voteId, userId, optionId);
+    }
+    
+    public VoteResultDto getVoteResult(Long projectId, Long postId, Long userId) {
+    	
+        checkPermission(projectId, userId, postId);
+        
+        // 1. 투표 정보 가져오기
+        ProjectPostVote vote = voteMapper.findVoteEntityByPostId(postId);
+        if (vote == null) {
+            throw new CustomException(ErrorCode.VOTE_NOT_FOUND);
+        }
+        Long voteId = vote.getVoteId();
+        
+        // 2. 전체 투표 수 계산
+        int totalVotes = voteResultMapper.countTotalVotes(voteId);
+
+        // 3. 각 옵션별 투표 수 계산
+        List<VoteOptionResultDto> optionResults = voteOptionMapper.findOptionsByVoteId(voteId).stream()
+            .map((ProjectPostVoteOption option) -> {
+                int voteCount = voteResultMapper.countVotesByOption(option.getOptionId());
+                return VoteOptionResultDto.builder()
+                    .optionId(option.getOptionId())
+                    .content(option.getOptionText())
+                    .voteCount(voteCount)
+                    .build();
+            })
+            .collect(Collectors.toList());
+
+        // 4. 결과 DTO 생성
+        return VoteResultDto.builder()
+            .totalVotes(totalVotes)
+            .options(optionResults)
+            .build();
     }
 }

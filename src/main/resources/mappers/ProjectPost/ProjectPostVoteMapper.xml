@@ -42,6 +42,17 @@
         WHERE v.post_id = #{postId}
     </select>
     
+    <select id="findVoteEntityByPostId"
+            resultType="com.ssafy.travel.community.entity.ProjectPostVote">
+        SELECT 
+            vote_id AS voteId,
+            post_id AS postId,
+            question AS question,
+            multiple_choice AS multipleChoice
+        FROM project_post_vote
+        WHERE post_id = #{postId}
+    </select>
+    
     <delete id="deleteVote">
     	DELETE FROM project_post_vote WHERE vote_id=#{voteId}
     </delete>

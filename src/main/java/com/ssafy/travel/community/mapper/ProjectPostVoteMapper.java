@@ -15,6 +15,7 @@ public interface ProjectPostVoteMapper {
     void insertOption(ProjectPostVoteOption option);
     Long findVoteIdByPostId(Long postId);
     VoteDetailResponseDto findVoteByPostId(@Param("postId") Long postId);
+    ProjectPostVote findVoteEntityByPostId(@Param("postId") Long postId);
     List<ProjectPostVoteOption> findOptionsByVoteId(Long voteId);
     Boolean hasUserVoted(
             @Param("voteId") Long voteId,

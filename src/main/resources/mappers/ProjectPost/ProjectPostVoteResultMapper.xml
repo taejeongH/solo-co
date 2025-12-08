@@ -22,4 +22,16 @@
 		VALUES (#{voteId}, #{userId}, #{optionId}, NOW())
 	</insert>
 	
+	<select id="countTotalVotes" resultType="int">
+        SELECT COUNT(*)
+        FROM project_post_vote_result
+        WHERE vote_id = #{voteId}
+    </select>
+
+    <select id="countVotesByOption" resultType="int">
+        SELECT COUNT(*)
+        FROM project_post_vote_result
+        WHERE option_id = #{optionId}
+    </select>
+	
 </mapper>

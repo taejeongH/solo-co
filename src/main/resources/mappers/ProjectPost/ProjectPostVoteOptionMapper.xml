@@ -20,6 +20,16 @@
         ORDER BY o.option_id
     </select>
 
+    <select id="findOptionsByVoteId" resultType="com.ssafy.travel.community.entity.ProjectPostVoteOption">
+        SELECT
+            option_id as optionId,
+            vote_id as voteId,
+            option_text as optionText,
+            order_no as orderNo
+        FROM project_post_vote_option
+        WHERE vote_id = #{voteId}
+    </select>
+
     <select id="findOptionById" resultType="com.ssafy.travel.community.entity.ProjectPostVoteOption">
         SELECT
             option_id as optionId,
