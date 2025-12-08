@@ -48,4 +48,12 @@ public class SwaggerConfig {
                 .pathsToMatch("/api/travels/**")
                 .build();
     }
+    
+    @Bean
+    public GroupedOpenApi placeApi() {
+        return GroupedOpenApi.builder()
+                .group("place-api")
+                .pathsToMatch("/api/places/**")
+                .build();
+    }
 }

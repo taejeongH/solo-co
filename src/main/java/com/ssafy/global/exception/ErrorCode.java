@@ -29,6 +29,7 @@ public enum ErrorCode {
     POST_NOT_FOUND(404, "4042", "존재하지 않는 게시글입니다."),
     COMMENT_NOT_FOUND(404, "4043", "존재하지 않는 댓글입니다."),
     VOTE_NOT_FOUND(404, "4044", "존재하지 않는 투표입니다."),
+    PLACE_NOT_FOUND(404, "4045", "존재하지 않는 장소입니다."),
     
     // 409 Conflict
     USERNAME_ALREADY_EXISTS(409, "4090", "이미 존재하는 사용자명입니다."),

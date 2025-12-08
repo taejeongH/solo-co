@@ -1,0 +1,267 @@
+package com.ssafy.place.service;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map; // Added for PlaceDetailDto geometry
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
+import com.ssafy.place.dto.PlaceDetailDto;
+import com.ssafy.place.dto.PlaceDto;
+import com.ssafy.place.dto.PlaceSearchItemDto;
+import com.ssafy.place.dto.PlaceSearchResponseDto;
+import com.ssafy.place.dto.PlaceDetailDto.OpeningHoursDto;
+import com.ssafy.place.dto.PlaceDetailDto.ReviewDto;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class PlaceService {
+
+	@Value("${google.places.api.key}")
+	private String googlePlacesApiKey;
+
+	private final String GOOGLE_PLACES_API_BASE_URL = "https://maps.googleapis.com/maps/api/place";
+	private final RestTemplate restTemplate;
+	private final ObjectMapper objectMapper;
+
+	public PlaceSearchResponseDto searchPlaces(String query, String location, String type, String nextPageToken) {
+
+		// Decode the query first to prevent double encoding
+
+//                String decodedQuery = URLDecoder.decode(query, StandardCharsets.UTF_8.toString());
+
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder
+				.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/textsearch/json")
+				.queryParam("query", query)
+				.queryParam("key", googlePlacesApiKey);
+
+		if (location != null && !location.isEmpty()) {
+			uriBuilder.queryParam("location", location);
+		}
+
+		if (type != null && !type.isEmpty()) {
+			uriBuilder.queryParam("type", type);
+		}
+
+		if (nextPageToken != null && !nextPageToken.isEmpty()) {
+			uriBuilder.queryParam("pagetoken", nextPageToken);
+		}
+
+		String url = uriBuilder.build(false).toUriString();
+
+		try {
+
+			String response = restTemplate.getForObject(url, String.class);
+			JsonNode root = objectMapper.readTree(response);
+			String status = root.path("status").asText();
+
+			if (!"OK".equals(status) && !"ZERO_RESULTS".equals(status)) {
+
+				throw new CustomException(ErrorCode.INVALID_REQUEST,
+						"Google Places API error: " + status + " - " + root.path("error_message").asText());
+
+			}
+
+			List<PlaceSearchItemDto> places = mapGooglePlaceResultsToDto(root.path("results"));
+
+			String nextToken = root.path("next_page_token").asText(null);
+
+			return PlaceSearchResponseDto.builder()
+					.places(places)
+					.nextPageToken(nextToken)
+					.build();
+
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INTERNAL_ERROR, "Error calling Google Places API: " + e.getMessage());
+		}
+
+	}
+
+	private List<PlaceSearchItemDto> mapGooglePlaceResultsToDto(JsonNode results) {
+		if (results == null || !results.isArray()) {
+			return Collections.emptyList();
+		}
+
+		List<PlaceSearchItemDto> placeSearchItemDtos = new java.util.ArrayList<>();
+		for (JsonNode result : results) {
+			placeSearchItemDtos.add(PlaceSearchItemDto.builder()
+					.placeId(result.path("place_id").asText())
+					.name(result.path("name").asText())
+					.formattedAddress(result.path("formatted_address").asText())
+					.build());
+		}
+
+		return placeSearchItemDtos;
+
+	}
+
+	public PlaceDto getPlaceBriefDetails(String placeId) {
+		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos"; // Request 'photos' field
+		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+				.queryParam("place_id", placeId)
+				.queryParam("fields", fields)
+				.queryParam("key", googlePlacesApiKey)
+				.build(false)
+				.toUriString();
+
+		try {
+			String response = restTemplate.getForObject(url, String.class);
+			JsonNode root = objectMapper.readTree(response);
+			String status = root.path("status").asText();
+
+			if (!"OK".equals(status)) {
+				throw new CustomException(ErrorCode.INVALID_REQUEST,
+						"Google Places API error: " + status + " - " + root.path("error_message").asText());
+			}
+
+			JsonNode result = root.path("result");
+
+			if (result.isMissingNode()) {
+				throw new CustomException(ErrorCode.PLACE_NOT_FOUND, "Place details not found for placeId: " + placeId);
+			}
+
+			List<String> photoUrls = Collections.emptyList();
+			if (result.has("photos") && result.path("photos").isArray()) {
+				photoUrls = new java.util.ArrayList<>();
+				for (JsonNode photoNode : result.path("photos")) {
+					String photoReference = photoNode.path("photo_reference").asText();
+					photoUrls.add(getGooglePhotoUrl(photoReference, 400)); // Max width for brief display
+				}
+			}
+			
+			List<String> types = Collections.emptyList();
+			if (result.has("types") && result.path("types").isArray()) {
+				types = objectMapper.convertValue(
+						result.path("types"),
+						objectMapper.getTypeFactory().constructCollectionType(List.class, String.class)
+				);
+			}
+
+			return PlaceDto.builder()
+					.placeId(result.path("place_id").asText())
+					.name(result.path("name").asText())
+					.formattedAddress(result.path("formatted_address").asText())
+					.formattedPhoneNumber(result.path("formatted_phone_number").asText(null))
+					.types(types)
+					.photoUrls(photoUrls) // Use the list of URLs
+					.build();
+
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INTERNAL_ERROR,
+					"Error calling Google Places API for brief details: " + e.getMessage());
+		}
+
+	}
+
+	public PlaceDetailDto getPlaceFullDetails(String placeId) {
+		String fields = "place_id,name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours,reviews,photos,geometry,business_status,vicinity";
+		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+				.queryParam("place_id", placeId).queryParam("fields", fields).queryParam("key", googlePlacesApiKey)
+				.build(false).toUriString();
+
+		System.out.println("Google Places API Full Details Request URL: " + url);
+
+		try {
+			String response = restTemplate.getForObject(url, String.class);
+			System.out.println(response);
+			JsonNode root = objectMapper.readTree(response);
+
+			String status = root.path("status").asText();
+			if (!"OK".equals(status)) {
+				throw new CustomException(ErrorCode.INVALID_REQUEST,
+						"Google Places API error: " + status + " - " + root.path("error_message").asText());
+			}
+
+			JsonNode result = root.path("result");
+			if (result.isMissingNode()) {
+				throw new CustomException(ErrorCode.PLACE_NOT_FOUND, "Place details not found for placeId: " + placeId);
+			}
+
+			// Map photos
+			List<String> photoUrls = Collections.emptyList();
+			if (result.has("photos") && result.path("photos").isArray()) {
+				photoUrls = new java.util.ArrayList<>();
+				for (JsonNode photoNode : result.path("photos")) {
+					String photoReference = photoNode.path("photo_reference").asText();
+					photoUrls.add(getGooglePhotoUrl(photoReference, 1000)); // Max width for full details
+				}
+			}
+
+			// Map types
+			List<String> types = Collections.emptyList();
+			if (result.has("types") && result.path("types").isArray()) {
+				types = objectMapper.convertValue(result.path("types"),
+						objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+			}
+
+			// Map opening hours
+			OpeningHoursDto openingHoursDto = null;
+			if (result.has("opening_hours")) {
+				JsonNode openingHoursNode = result.path("opening_hours");
+				openingHoursDto = OpeningHoursDto.builder().openNow(openingHoursNode.path("open_now").asBoolean(false))
+						.weekdayText(objectMapper.convertValue(openingHoursNode.path("weekday_text"),
+								objectMapper.getTypeFactory().constructCollectionType(List.class, String.class)))
+						.build();
+			}
+
+			// Map reviews
+			List<ReviewDto> reviews = Collections.emptyList();
+			if (result.has("reviews") && result.path("reviews").isArray()) {
+				reviews = new java.util.ArrayList<>();
+				for (JsonNode reviewNode : result.path("reviews")) {
+					reviews.add(ReviewDto.builder().authorName(reviewNode.path("author_name").asText())
+							.authorUrl(reviewNode.path("author_url").asText(null))
+							.profilePhotoUrl(reviewNode.path("profile_photo_url").asText(null))
+							.rating(reviewNode.path("rating").asInt())
+							.relativeTimeDescription(reviewNode.path("relative_time_description").asText())
+							.text(reviewNode.path("text").asText()).time(reviewNode.path("time").asLong()).build());
+				}
+			}
+
+			// Map geometry (location)
+			JsonNode geometryNode = result.path("geometry");
+			JsonNode locationNode = geometryNode.path("location");
+			Map<String, Object> geometryMap = null;
+			if (!locationNode.isMissingNode()) {
+				geometryMap = Map.of("lat", locationNode.path("lat").asDouble(), "lng",
+						locationNode.path("lng").asDouble());
+			}
+
+			return PlaceDetailDto.builder().placeId(result.path("place_id").asText()).name(result.path("name").asText())
+					.formattedAddress(result.path("formatted_address").asText())
+					.formattedPhoneNumber(result.path("formatted_phone_number").asText(null)).types(types)
+					.website(result.path("website").asText(null)).url(result.path("url").asText(null))
+					.rating(result.path("rating").asDouble(0.0))
+					.userRatingsTotal(result.path("user_ratings_total").asInt(0))
+					.openingHours(openingHoursDto != null ? Collections.singletonList(openingHoursDto)
+							: Collections.emptyList())
+					.reviews(reviews).photoUrls(photoUrls) // Corrected from photoReferences
+					.geometry(geometryMap).businessStatus(result.path("business_status").asText(null)).build();
+
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INTERNAL_ERROR,
+					"Error calling Google Places API for full details: " + e.getMessage());
+		}
+	}
+
+	private String getGooglePhotoUrl(String photoReference, int maxWidth) {
+		if (photoReference == null || photoReference.isEmpty()) {
+			return null;
+		}
+		return UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/photo").queryParam("maxwidth", maxWidth)
+				.queryParam("photoreference", photoReference).queryParam("key", googlePlacesApiKey).build(false)
+				.toUriString();
+	}
+}
