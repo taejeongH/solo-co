@@ -38,19 +38,19 @@ public class PlaceController {
 
     @GetMapping("/{placeId}/brief")
     @Operation(summary = "장소 간략 정보 조회 (Google Places API)")
-    public ResponseEntity<PlaceDto> getPlaceBriefDetails(
-            @PathVariable String placeId
+    public ResponseEntity<?> getPlaceBriefDetails(
+            @PathVariable String placeId,
+            @RequestParam Long projectId
     ) {
-        PlaceDto response = placeService.getPlaceBriefDetails(placeId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(placeService.getPlaceBriefDetails(placeId, projectId));
     }
 
     @GetMapping("/{placeId}/details")
     @Operation(summary = "장소 상세 정보 조회 (Google Places API)")
-    public ResponseEntity<PlaceDetailDto> getPlaceFullDetails(
-            @PathVariable String placeId
+    public ResponseEntity<?> getPlaceFullDetails(
+            @PathVariable String placeId,
+            @RequestParam Long projectId
     ) {
-        PlaceDetailDto response = placeService.getPlaceFullDetails(placeId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(placeService.getPlaceFullDetails(placeId, projectId));
     }
 }
