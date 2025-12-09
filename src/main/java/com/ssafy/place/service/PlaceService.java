@@ -8,6 +8,7 @@ import java.util.Map; // Added for PlaceDetailDto geometry
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -36,8 +37,8 @@ public class PlaceService {
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 
-	public PlaceSearchResponseDto searchPlaces(String query, String location, String type, String nextPageToken) {
-
+	    @Cacheable("places")
+	    public PlaceSearchResponseDto searchPlaces(String query, String location, String type, String nextPageToken) {
 		// Decode the query first to prevent double encoding
 
 //                String decodedQuery = URLDecoder.decode(query, StandardCharsets.UTF_8.toString());
@@ -107,8 +108,8 @@ public class PlaceService {
 
 	}
 
-	public PlaceDto getPlaceBriefDetails(String placeId) {
-		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos"; // Request 'photos' field
+	    @Cacheable("places")
+	    public PlaceDto getPlaceBriefDetails(String placeId) {		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos"; // Request 'photos' field
 		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
 				.queryParam("place_id", placeId)
 				.queryParam("fields", fields)
@@ -165,8 +166,8 @@ public class PlaceService {
 
 	}
 
-	public PlaceDetailDto getPlaceFullDetails(String placeId) {
-		String fields = "place_id,name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours,reviews,photos,geometry,business_status,vicinity";
+	    @Cacheable("places")
+	    public PlaceDetailDto getPlaceFullDetails(String placeId) {		String fields = "place_id,name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours,reviews,photos,geometry,business_status,vicinity";
 		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
 				.queryParam("place_id", placeId).queryParam("fields", fields).queryParam("key", googlePlacesApiKey)
 				.build(false).toUriString();
