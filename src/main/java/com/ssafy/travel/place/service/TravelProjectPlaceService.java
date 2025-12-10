@@ -51,6 +51,11 @@ public class TravelProjectPlaceService {
         // 0. 권한 확인
         checkPermission(projectId, userId);
 
+        // 0.5 중복 확인
+        if (placeMapper.isPlaceExist(projectId, googlePlaceId)) {
+            throw new CustomException(ErrorCode.PLACE_ALREADY_EXISTS);
+        }
+
         // 1. googlePlaceId로 장소 정보 조회 (캐시 또는 API)
     	PlaceDto placeDetails = (PlaceDto) placeService.getPlaceBriefDetails(googlePlaceId, -1L);
 
@@ -126,40 +131,6 @@ public class TravelProjectPlaceService {
 
         // 우선순위 목록에 없거나 매핑되지 않은 경우, 기본값 또는 '기타' 반환
         return "기타";
-    }
-
-    private String translatePlaceTypeToKorean(String type) {
-        // 이 단일 String 버전을 유지할 필요가 있다면 남겨두고,
-        // 아니면 삭제하고 위 List<String> 버전만 사용합니다.
-        // 현재는 addPlace에서 List<String> 버전을 사용하므로 이 버전은 사용되지 않습니다.
-        // 하지만 다른 곳에서 사용될 수 있으니 일단 남겨둡니다.
-        Map<String, String> typeMap = Map.ofEntries(
-            Map.entry("restaurant", "음식점"),
-            Map.entry("cafe", "카페"),
-            Map.entry("bar", "바"),
-            Map.entry("lodging", "숙소"),
-            Map.entry("bank", "은행"),
-            Map.entry("atm", "ATM"),
-            Map.entry("store", "상점"),
-            Map.entry("tourist_attraction", "관광 명소"),
-            Map.entry("park", "공원"),
-            Map.entry("subway_station", "지하철역"),
-            Map.entry("bus_station", "버스 정류장"),
-            Map.entry("airport", "공항"),
-            Map.entry("department_store", "백화점"),
-            Map.entry("shopping_mall", "쇼핑몰"),
-            Map.entry("bakery", "베이커리"),
-            Map.entry("convenience_store", "편의점"),
-            Map.entry("pharmacy", "약국"),
-            Map.entry("hospital", "병원"),
-            Map.entry("movie_theater", "영화관"),
-            Map.entry("museum", "박물관"),
-            Map.entry("art_gallery", "미술관"),
-            Map.entry("library", "도서관"),
-            Map.entry("point_of_interest", "관심 장소"),
-            Map.entry("establishment", "시설")
-        );
-        return typeMap.getOrDefault(type, "기타");
     }
 
 

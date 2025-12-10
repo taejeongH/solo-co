@@ -32,16 +32,16 @@
     </delete>
     
     <select id="findSortedPlacesByProjectId" parameterType="map" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
-        SELECT place_id as placeId,
-               project_id as projectId,
-               google_place_id as googlePlaceId,
-               place_name as placeName,
-               place_address as placeAddress,
+        SELECT place_id,
+               project_id,
+               google_place_id,
+               place_name,
+               place_address,
                latitude,
                longitude,
                thumbnail,
-               place_type as placeType,
-               created_at as createdAt
+               place_type,
+               created_at
         FROM project_place
         WHERE project_id = #{projectId}
         <if test="sortBy != null">
@@ -61,6 +61,10 @@
                 ${order}
             </if>
         </if>
+    </select>
+
+    <select id="isPlaceExist" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM project_place WHERE project_id = #{projectId} AND google_place_id = #{googlePlaceId})
     </select>
     
     

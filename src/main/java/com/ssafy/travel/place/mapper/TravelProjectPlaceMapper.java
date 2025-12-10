@@ -18,6 +18,8 @@ public interface TravelProjectPlaceMapper {
 
     List<TravelProjectPlace> findByProjectId(Long projectId);
     List<TravelProjectPlace> findSortedPlacesByProjectId(Map<String, Object> params);
+
+    boolean isPlaceExist(@Param("projectId") Long projectId, @Param("googlePlaceId") String googlePlaceId);
     
     void deleteAllByProjectId(Long projectId);
 
