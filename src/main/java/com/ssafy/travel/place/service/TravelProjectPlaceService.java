@@ -21,6 +21,9 @@ import com.ssafy.travel.place.mapper.TravelProjectPlaceMapper;
 
 import lombok.RequiredArgsConstructor;
 
+import com.ssafy.travel.place.dto.ProjectPlaceListResponseDto;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class TravelProjectPlaceService {
@@ -57,6 +60,10 @@ public class TravelProjectPlaceService {
         place.setGooglePlaceId(googlePlaceId);
         place.setPlaceName(placeDetails.getName());
         place.setPlaceAddress(placeDetails.getFormattedAddress());
+
+        if (placeDetails.getTypes() != null && !placeDetails.getTypes().isEmpty()) {
+            place.setPlaceType(translatePlaceTypeToKorean(placeDetails.getTypes()));
+        }
         
         if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
         	String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0), "place-thumbnail");
@@ -73,11 +80,130 @@ public class TravelProjectPlaceService {
         placeMapper.insertPlace(place);
     }
 
+    private String translatePlaceTypeToKorean(List<String> types) {
+        // 우선순위를 정의합니다. (더 구체적인 유형이 먼저 오도록)
+        List<String> priorityOrder = List.of(
+            "restaurant", "cafe", "lodging", "bank", "atm", "store",
+            "bakery", "convenience_store", "pharmacy", "hospital",
+            "movie_theater", "museum", "art_gallery", "library",
+            "tourist_attraction", "park", "subway_station", "bus_station", "airport",
+            "department_store", "shopping_mall", "bar",
+            "point_of_interest", "establishment" // 덜 구체적인 유형은 뒤로
+        );
+
+        Map<String, String> typeMap = Map.ofEntries(
+            Map.entry("restaurant", "음식점"),
+            Map.entry("cafe", "카페"),
+            Map.entry("bar", "바"),
+            Map.entry("lodging", "숙소"),
+            Map.entry("bank", "은행"),
+            Map.entry("atm", "ATM"),
+            Map.entry("store", "상점"),
+            Map.entry("tourist_attraction", "관광 명소"),
+            Map.entry("park", "공원"),
+            Map.entry("subway_station", "지하철역"),
+            Map.entry("bus_station", "버스 정류장"),
+            Map.entry("airport", "공항"),
+            Map.entry("department_store", "백화점"),
+            Map.entry("shopping_mall", "쇼핑몰"),
+            Map.entry("bakery", "베이커리"),
+            Map.entry("convenience_store", "편의점"),
+            Map.entry("pharmacy", "약국"),
+            Map.entry("hospital", "병원"),
+            Map.entry("movie_theater", "영화관"),
+            Map.entry("museum", "박물관"),
+            Map.entry("art_gallery", "미술관"),
+            Map.entry("library", "도서관"),
+            Map.entry("point_of_interest", "관심 장소"),
+            Map.entry("establishment", "시설")
+        );
+
+        for (String type : priorityOrder) {
+            if (types.contains(type) && typeMap.containsKey(type)) {
+                return typeMap.get(type);
+            }
+        }
+
+        // 우선순위 목록에 없거나 매핑되지 않은 경우, 기본값 또는 '기타' 반환
+        return "기타";
+    }
+
+    private String translatePlaceTypeToKorean(String type) {
+        // 이 단일 String 버전을 유지할 필요가 있다면 남겨두고,
+        // 아니면 삭제하고 위 List<String> 버전만 사용합니다.
+        // 현재는 addPlace에서 List<String> 버전을 사용하므로 이 버전은 사용되지 않습니다.
+        // 하지만 다른 곳에서 사용될 수 있으니 일단 남겨둡니다.
+        Map<String, String> typeMap = Map.ofEntries(
+            Map.entry("restaurant", "음식점"),
+            Map.entry("cafe", "카페"),
+            Map.entry("bar", "바"),
+            Map.entry("lodging", "숙소"),
+            Map.entry("bank", "은행"),
+            Map.entry("atm", "ATM"),
+            Map.entry("store", "상점"),
+            Map.entry("tourist_attraction", "관광 명소"),
+            Map.entry("park", "공원"),
+            Map.entry("subway_station", "지하철역"),
+            Map.entry("bus_station", "버스 정류장"),
+            Map.entry("airport", "공항"),
+            Map.entry("department_store", "백화점"),
+            Map.entry("shopping_mall", "쇼핑몰"),
+            Map.entry("bakery", "베이커리"),
+            Map.entry("convenience_store", "편의점"),
+            Map.entry("pharmacy", "약국"),
+            Map.entry("hospital", "병원"),
+            Map.entry("movie_theater", "영화관"),
+            Map.entry("museum", "박물관"),
+            Map.entry("art_gallery", "미술관"),
+            Map.entry("library", "도서관"),
+            Map.entry("point_of_interest", "관심 장소"),
+            Map.entry("establishment", "시설")
+        );
+        return typeMap.getOrDefault(type, "기타");
+    }
+
+
     public void deletePlace(Long projectId, Long placeId, Long userId) {
         // 0. 권한 확인
         checkPermission(projectId, userId);
         
         placeMapper.deletePlace(placeId, projectId);
+    }
+
+    public List<ProjectPlaceListResponseDto> getPlaces(Long projectId, Long userId, String sortBy, String order) {
+        // 0. 권한 확인
+        checkPermission(projectId, userId);
+
+        // 1. sortBy 파라미터 검증 (SQL Injection 방지)
+        List<String> allowedSorts = List.of("createdAt", "name", "placeType");
+        if (!allowedSorts.contains(sortBy)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST, "Invalid sort by parameter");
+        }
+
+        // 2. 파라미터를 맵에 담아 매퍼로 전달
+        Map<String, Object> params = Map.of(
+                "projectId", projectId,
+                "sortBy", sortBy,
+                "order", "desc".equalsIgnoreCase(order) ? "DESC" : "ASC"
+        );
+
+        // 3. 장소 목록 조회
+        List<TravelProjectPlace> places = placeMapper.findSortedPlacesByProjectId(params);
+
+        // 4. Entity -> DTO 변환
+        return places.stream()
+                .map(place -> ProjectPlaceListResponseDto.builder()
+                        .placeId(place.getPlaceId())
+                        .placeName(place.getPlaceName())
+                        .placeAddress(place.getPlaceAddress())
+                        .latitude(place.getLatitude())
+                        .longitude(place.getLongitude())
+                        .googlePlaceId(place.getGooglePlaceId())
+                        .thumbnail(place.getThumbnail())
+                        .placeType(place.getPlaceType())
+                        .createdAt(place.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

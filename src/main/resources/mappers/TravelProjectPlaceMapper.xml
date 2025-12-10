@@ -6,27 +6,63 @@
 
     <insert id="insertPlace">
         INSERT INTO project_place
-        (project_id, google_place_id, place_name, place_address, latitude, longitude, thumbnail)
+        (project_id, google_place_id, place_name, place_address, latitude, longitude, thumbnail, place_type)
         VALUES
-        (#{projectId}, #{googlePlaceId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude}, #{thumbnail})
+        (#{projectId}, #{googlePlaceId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude}, #{thumbnail}, #{placeType})
     </insert>
 
-    <select id="findByProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
-        SELECT project_id as projectId,
-        	   place_id as placeId,
-               google_place_id as googlePlaceId,
-        	   place_name as placeName, 
-        	   place_address as placeAddress, 
-        	   latitude, 
-        	   longitude
-        FROM project_place
-        WHERE project_id = #{projectId}
-    </select>
-    
+	<select id="findByProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
+	    SELECT place_id,
+	           project_id,
+	           google_place_id,
+	           place_name,
+	           place_address,
+	           latitude,
+	           longitude,
+	           thumbnail,
+	           place_type,
+	           created_at
+	    FROM project_place
+	    WHERE project_id = #{projectId}
+	</select>
+	
     <delete id="deletePlace">
     	DELETE from project_place 
     	WHERE place_id=#{placeId} and project_id=#{projectId}
     </delete>
+    
+    <select id="findSortedPlacesByProjectId" parameterType="map" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
+        SELECT place_id as placeId,
+               project_id as projectId,
+               google_place_id as googlePlaceId,
+               place_name as placeName,
+               place_address as placeAddress,
+               latitude,
+               longitude,
+               thumbnail,
+               place_type as placeType,
+               created_at as createdAt
+        FROM project_place
+        WHERE project_id = #{projectId}
+        <if test="sortBy != null">
+            ORDER BY
+            <choose>
+                <when test="sortBy == 'name'">
+                    place_name
+                </when>
+                <when test="sortBy == 'placeType'">
+                    place_type
+                </when>
+                <otherwise>
+                    created_at
+                </otherwise>
+            </choose>
+            <if test="order != null">
+                ${order}
+            </if>
+        </if>
+    </select>
+    
     
     <delete id="deleteAllByProjectId">
 	    DELETE FROM project_place WHERE project_id = #{projectId}

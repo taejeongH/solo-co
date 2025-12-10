@@ -37,12 +37,14 @@ CREATE TABLE project_member (
 CREATE TABLE project_place (
     place_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     project_id BIGINT NOT NULL,
+    google_place_id VARCHAR(200),
     place_name VARCHAR(100) NOT NULL,
     place_address VARCHAR(255),
-    google_place_id VARCHAR(200),
+    place_type VARCHAR(100),
     thumbnail VARCHAR(255),
     latitude DOUBLE,
     longitude DOUBLE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
 
     FOREIGN KEY (project_id) REFERENCES travel_project(project_id) ON DELETE CASCADE
