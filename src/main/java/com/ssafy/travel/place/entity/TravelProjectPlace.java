@@ -6,6 +6,7 @@ import lombok.Data;
 public class TravelProjectPlace {
     private Long placeId;
     private Long projectId;
+    private String googlePlaceId;
     private String placeName;
     private String placeAddress;
     private Double latitude;

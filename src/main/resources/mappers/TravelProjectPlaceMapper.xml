@@ -6,14 +6,15 @@
 
     <insert id="insertPlace">
         INSERT INTO project_place
-        (project_id, place_name, place_address, latitude, longitude)
+        (project_id, google_place_id, place_name, place_address, latitude, longitude)
         VALUES
-        (#{projectId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude})
+        (#{projectId}, #{googlePlaceId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude})
     </insert>
 
     <select id="findByProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
         SELECT project_id as projectId,
         	   place_id as placeId,
+               google_place_id as googlePlaceId,
         	   place_name as placeName, 
         	   place_address as placeAddress, 
         	   latitude, 

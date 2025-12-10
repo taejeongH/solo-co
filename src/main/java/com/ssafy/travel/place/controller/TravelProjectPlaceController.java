@@ -24,13 +24,13 @@ public class TravelProjectPlaceController {
 
     private final TravelProjectPlaceService placeService;
 
-    @PostMapping
+    @PostMapping("/{googlePlaceId}")
     @Operation(summary = "여행 장소 추가", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> addPlace(
             @PathVariable Long projectId,
-            @RequestBody TravelProjectPlaceRequestDto place) {
+            @PathVariable String googlePlaceId) {
 
-        placeService.addPlace(projectId, place);
+        placeService.addPlace(projectId, googlePlaceId);
         return ResponseEntity.ok("장소 추가 완료");
     }
 
@@ -42,13 +42,5 @@ public class TravelProjectPlaceController {
 
         placeService.deletePlace(projectId, placeId);
         return ResponseEntity.ok("장소 삭제 완료");
-    }
-
-    @GetMapping
-    @Operation(summary = "여행 장소 조회", security = @SecurityRequirement(name = "JWT Auth"))
-    public ResponseEntity<?> getPlaces(
-            @PathVariable Long projectId) {
-
-        return ResponseEntity.ok(placeService.getPlaces(projectId));
     }
 }

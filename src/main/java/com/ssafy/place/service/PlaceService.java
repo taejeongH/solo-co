@@ -105,6 +105,7 @@ public class PlaceService {
 
     @Cacheable("places")
 	public Object getPlaceBriefDetails(String placeId, Long projectId) {
+    	if (projectId==-1) return getGroupPlaceBriefDetails(placeId);
 		TravelProject project = travelProjectMapper.findById(projectId);
 		if (project == null) {
 			throw new CustomException(ErrorCode.PROJECT_NOT_FOUND, "Project not found with id: " + projectId);
@@ -189,7 +190,7 @@ public class PlaceService {
 
 
 	private PlaceDto getGroupPlaceBriefDetails(String placeId) {
-		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos"; // Request 'photos' field
+		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos,geometry"; // Request 'photos' and 'geometry' fields
 		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
 				.queryParam("place_id", placeId)
 				.queryParam("fields", fields)
@@ -231,6 +232,15 @@ public class PlaceService {
 				);
 			}
 
+			// Map geometry (location)
+			JsonNode geometryNode = result.path("geometry");
+			JsonNode locationNode = geometryNode.path("location");
+			Map<String, Object> geometryMap = null;
+			if (!locationNode.isMissingNode()) {
+				geometryMap = Map.of("lat", locationNode.path("lat").asDouble(), "lng",
+						locationNode.path("lng").asDouble());
+			}
+
 			return PlaceDto.builder()
 					.placeId(result.path("place_id").asText())
 					.name(result.path("name").asText())
@@ -238,6 +248,7 @@ public class PlaceService {
 					.formattedPhoneNumber(result.path("formatted_phone_number").asText(null))
 					.types(types)
 					.photoUrls(photoUrls) // Use the list of URLs
+					.geometry(geometryMap)
 					.build();
 
 		} catch (Exception e) {
