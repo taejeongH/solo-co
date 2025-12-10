@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.ssafy.global.exception.CustomException;
+import com.ssafy.global.exception.ErrorCode;
+import com.ssafy.travel.project.entity.TravelProject;
+import com.ssafy.travel.project.mapper.TravelProjectMapper;
+import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.global.service.S3Service;
@@ -23,8 +28,26 @@ public class TravelProjectPlaceService {
     private final TravelProjectPlaceMapper placeMapper;
     private final PlaceService placeService;
     private final S3Service s3Service;
+    private final TravelProjectMapper projectMapper;
+    private final TravelProjectMemberMapper memberMapper;
 
-    public void addPlace(Long projectId, String googlePlaceId) throws IOException {
+    private void checkPermission(Long projectId, Long userId) {
+        // 1. 프로젝트 존재 여부 확인
+        TravelProject project = projectMapper.findById(projectId);
+        if (project == null) {
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+
+        // 2. 멤버 권한 체크
+        if (!memberMapper.isMember(projectId, userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    public void addPlace(Long projectId, String googlePlaceId, Long userId) throws IOException {
+        // 0. 권한 확인
+        checkPermission(projectId, userId);
+
         // 1. googlePlaceId로 장소 정보 조회 (캐시 또는 API)
     	PlaceDto placeDetails = (PlaceDto) placeService.getPlaceBriefDetails(googlePlaceId, -1L);
 
@@ -50,7 +73,10 @@ public class TravelProjectPlaceService {
         placeMapper.insertPlace(place);
     }
 
-    public void deletePlace(Long projectId, Long placeId) {
+    public void deletePlace(Long projectId, Long placeId, Long userId) {
+        // 0. 권한 확인
+        checkPermission(projectId, userId);
+        
         placeMapper.deletePlace(placeId, projectId);
     }
 

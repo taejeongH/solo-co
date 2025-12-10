@@ -3,6 +3,7 @@ package com.ssafy.travel.place.controller;
 import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.place.dto.TravelProjectPlaceRequestDto;
 import com.ssafy.travel.place.service.TravelProjectPlaceService;
 
@@ -30,9 +32,10 @@ public class TravelProjectPlaceController {
     @Operation(summary = "여행 장소 추가", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> addPlace(
             @PathVariable Long projectId,
-            @PathVariable String googlePlaceId) throws IOException {
+            @PathVariable String googlePlaceId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
 
-        placeService.addPlace(projectId, googlePlaceId);
+        placeService.addPlace(projectId, googlePlaceId, userDetails.getUserId());
         return ResponseEntity.ok("장소 추가 완료");
     }
 
@@ -40,9 +43,10 @@ public class TravelProjectPlaceController {
     @Operation(summary = "여행 장소 삭제", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> deletePlace(
             @PathVariable Long projectId,
-            @PathVariable Long placeId) {
+            @PathVariable Long placeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        placeService.deletePlace(projectId, placeId);
+        placeService.deletePlace(projectId, placeId, userDetails.getUserId());
         return ResponseEntity.ok("장소 삭제 완료");
     }
 }
