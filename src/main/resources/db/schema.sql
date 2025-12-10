@@ -39,9 +39,11 @@ CREATE TABLE project_place (
     project_id BIGINT NOT NULL,
     place_name VARCHAR(100) NOT NULL,
     place_address VARCHAR(255),
+    google_place_id VARCHAR(200),
+    thumbnail VARCHAR(255),
     latitude DOUBLE,
     longitude DOUBLE,
-    google_place_id VARCHAR(200),
+    
 
     FOREIGN KEY (project_id) REFERENCES travel_project(project_id) ON DELETE CASCADE
 );
