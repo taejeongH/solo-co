@@ -1,10 +1,12 @@
 package com.ssafy.travel.place.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.ssafy.global.service.S3Service;
 import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.service.PlaceService;
 import com.ssafy.travel.itinerary.mapper.TravelItineraryMapper;
@@ -20,8 +22,9 @@ public class TravelProjectPlaceService {
 
     private final TravelProjectPlaceMapper placeMapper;
     private final PlaceService placeService;
+    private final S3Service s3Service;
 
-    public void addPlace(Long projectId, String googlePlaceId) {
+    public void addPlace(Long projectId, String googlePlaceId) throws IOException {
         // 1. googlePlaceId로 장소 정보 조회 (캐시 또는 API)
     	PlaceDto placeDetails = (PlaceDto) placeService.getPlaceBriefDetails(googlePlaceId, -1L);
 
@@ -31,6 +34,11 @@ public class TravelProjectPlaceService {
         place.setGooglePlaceId(googlePlaceId);
         place.setPlaceName(placeDetails.getName());
         place.setPlaceAddress(placeDetails.getFormattedAddress());
+        
+        if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
+        	String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0), "place-thumbnail");
+            place.setThumbnail(s3Url);
+        }
         
         Map<String, Object> geometry = placeDetails.getGeometry();
         if (geometry != null) {

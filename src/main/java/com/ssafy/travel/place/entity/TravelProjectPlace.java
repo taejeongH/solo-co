@@ -11,4 +11,5 @@ public class TravelProjectPlace {
     private String placeAddress;
     private Double latitude;
     private Double longitude;
+    private String thumbnail;
 }

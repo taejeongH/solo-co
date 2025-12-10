@@ -1,5 +1,7 @@
 package com.ssafy.travel.place.controller;
 
+import java.io.IOException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +30,7 @@ public class TravelProjectPlaceController {
     @Operation(summary = "여행 장소 추가", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> addPlace(
             @PathVariable Long projectId,
-            @PathVariable String googlePlaceId) {
+            @PathVariable String googlePlaceId) throws IOException {
 
         placeService.addPlace(projectId, googlePlaceId);
         return ResponseEntity.ok("장소 추가 완료");
