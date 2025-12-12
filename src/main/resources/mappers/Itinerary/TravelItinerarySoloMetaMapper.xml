@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.travel.itinerary.mapper.TravelItinerarySoloMetaMapper">
+
+	<delete id="deleteByProjectId">
+        DELETE FROM project_itinerary_solo_meta
+        WHERE project_id = #{projectId}
+    </delete>
+
+    <insert id="insertSoloMeta">
+        INSERT INTO project_itinerary_solo_meta (
+            project_id,
+            total_score,
+            safety,
+            transport_accessibility,
+            route_simplicity,
+            landmark_accessibility,
+            solo_dining_difficulty,
+            summary,
+            recommendation
+        ) VALUES (
+            #{projectId},
+            #{solo.soloScore.totalScore},
+            #{solo.soloScore.safety},
+            #{solo.soloScore.transportAccessibility},
+            #{solo.soloScore.routeSimplicity},
+            #{solo.soloScore.landmarkAccessibility},
+            #{solo.soloScore.soloDiningDifficulty},
+            #{solo.summary},
+            #{solo.recommendation}
+        )
+    </insert>
+</mapper>

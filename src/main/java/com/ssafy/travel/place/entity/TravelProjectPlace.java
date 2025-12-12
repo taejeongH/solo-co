@@ -13,5 +13,6 @@ public class TravelProjectPlace {
     private Double longitude;
     private String thumbnail;
     private String placeType;
+    private String status;
     private java.time.LocalDateTime createdAt;
 }

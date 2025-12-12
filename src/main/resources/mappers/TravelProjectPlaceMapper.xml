@@ -4,24 +4,24 @@
 
 <mapper namespace="com.ssafy.travel.place.mapper.TravelProjectPlaceMapper">
 
-    <insert id="insertPlace">
+    <insert id="insertPlace" useGeneratedKeys="true" keyProperty="placeId">
         INSERT INTO project_place
-        (project_id, google_place_id, place_name, place_address, latitude, longitude, thumbnail, place_type)
+        (project_id, google_place_id, place_name, place_address, latitude, longitude, thumbnail, place_type, status)
         VALUES
-        (#{projectId}, #{googlePlaceId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude}, #{thumbnail}, #{placeType})
+        (#{projectId}, #{googlePlaceId}, #{placeName}, #{placeAddress}, #{latitude}, #{longitude}, #{thumbnail}, #{placeType}, #{status})
     </insert>
 
 	<select id="findByProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
-	    SELECT place_id,
-	           project_id,
-	           google_place_id,
-	           place_name,
-	           place_address,
+	    SELECT place_id as placeId,
+	           project_id as projectId,
+	           google_place_id as googlePlaceId,
+	           place_name as placeName,
+	           place_address as placeAddress,
 	           latitude,
 	           longitude,
 	           thumbnail,
-	           place_type,
-	           created_at
+	           place_type as placeType,
+	           created_at as createdAt
 	    FROM project_place
 	    WHERE project_id = #{projectId}
 	</select>
@@ -67,10 +67,47 @@
         SELECT EXISTS(SELECT 1 FROM project_place WHERE project_id = #{projectId} AND google_place_id = #{googlePlaceId})
     </select>
     
+    <select id="findByPlaceId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
+    	SELECT place_id as placeId,
+	           project_id as projectId,
+	           google_place_id as googlePlaceId,
+	           place_name as placeName,
+	           place_address as placeAddress,
+	           latitude,
+	           longitude,
+	           thumbnail,
+	           place_type as placeType,
+	           status,
+	           created_at as createdAt
+	    FROM project_place
+	    WHERE place_id = #{placeId}
+    </select>
+    
     
     <delete id="deleteAllByProjectId">
 	    DELETE FROM project_place WHERE project_id = #{projectId}
 	</delete>
+	
+    <select id="findByProjectIdAndStatus">
+    	SELECT place_id as placeId,
+	           project_id as projectId,
+	           google_place_id as googlePlaceId,
+	           place_name as placeName,
+	           place_address as placeAddress,
+	           latitude,
+	           longitude,
+	           thumbnail,
+	           place_type as placeType,
+	           status,
+	           created_at as createdAt
+	    FROM project_place
+	    WHERE project_id=#{projectId} AND status=#{status}
+    </select>
     
+    <update id="updateStatus">
+    	UPDATE project_place 
+    	SET status = #{status} 
+    	WHERE place_id = #{placeId}
+    </update>
 
 </mapper>

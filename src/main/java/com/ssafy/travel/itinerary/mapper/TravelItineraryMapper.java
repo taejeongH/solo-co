@@ -1,7 +1,5 @@
 package com.ssafy.travel.itinerary.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,10 +8,10 @@ public interface TravelItineraryMapper {
 
 	void deleteByProjectId(@Param("projectId") Long projectId);
 
-	void insertItinerary(
-		    @Param("projectId") Long projectId,
-		    @Param("day") int day,
-		    @Param("places") List<String> places
-		);
-	
+    void insertItineraryPlace(
+        @Param("projectId") Long projectId,
+        @Param("day") int day,
+        @Param("orderNo") int orderNo,
+        @Param("placeId") Long placeId
+    );
 }

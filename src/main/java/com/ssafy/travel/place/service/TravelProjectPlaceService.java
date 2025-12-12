@@ -47,7 +47,7 @@ public class TravelProjectPlaceService {
         }
     }
 
-    public void addPlace(Long projectId, String googlePlaceId, Long userId) throws IOException {
+    public TravelProjectPlace addPlace(Long projectId, String googlePlaceId, Long userId, String status) throws IOException {
         // 0. 권한 확인
         checkPermission(projectId, userId);
 
@@ -65,6 +65,7 @@ public class TravelProjectPlaceService {
         place.setGooglePlaceId(googlePlaceId);
         place.setPlaceName(placeDetails.getName());
         place.setPlaceAddress(placeDetails.getFormattedAddress());
+        if(status!=null) place.setStatus(status);
 
         if (placeDetails.getTypes() != null && !placeDetails.getTypes().isEmpty()) {
             place.setPlaceType(translatePlaceTypeToKorean(placeDetails.getTypes()));
@@ -83,6 +84,8 @@ public class TravelProjectPlaceService {
 
         // 3. DB 저장
         placeMapper.insertPlace(place);
+        
+        return place;
     }
 
     private String translatePlaceTypeToKorean(List<String> types) {

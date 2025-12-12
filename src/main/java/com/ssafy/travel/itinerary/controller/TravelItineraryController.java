@@ -1,12 +1,18 @@
 package com.ssafy.travel.itinerary.controller;
 
+import java.io.IOException;
+
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.ai.dto.AutoGenerateResponse;
 import com.ssafy.travel.itinerary.dto.ItineraryApplyRequestDto;
 import com.ssafy.travel.itinerary.service.TravelItineraryService;
@@ -21,12 +27,13 @@ import lombok.RequiredArgsConstructor;
 public class TravelItineraryController {
 
     private final TravelItineraryService itineraryService;
+    private final ChatClient chatClient;
 
     @PostMapping("/{projectId}/itinerary/auto-generate")
     @Operation(summary = "여행 경로 AI 추천", security = @SecurityRequirement(name = "JWT Auth"))
-    public ResponseEntity<?> autoGenerate(@PathVariable Long projectId) {
+    public ResponseEntity<?> autoGenerate(@PathVariable Long projectId, @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
 
-        AutoGenerateResponse response = itineraryService.autoGenerate(projectId);
+        AutoGenerateResponse response = itineraryService.autoGenerate(projectId, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
     
@@ -34,10 +41,18 @@ public class TravelItineraryController {
     @Operation(summary = "여행 경로 선택", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> selectAIItinerary(
             @PathVariable Long projectId,
-            @RequestBody ItineraryApplyRequestDto request) {
+            @RequestBody ItineraryApplyRequestDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        itineraryService.applySelectedCandidate(projectId, request);
-        return ResponseEntity.ok("AI itinerary applied");
+        itineraryService.applySelectedCandidate(userDetails.getUserId(), projectId, request);
+        return ResponseEntity.ok("경로 저장 완료");
     }
 
+    @GetMapping("/test-ai")
+    public String testAi() {
+        return chatClient.prompt()
+            .user("hello world")
+            .call()
+            .content();
+    }
 }

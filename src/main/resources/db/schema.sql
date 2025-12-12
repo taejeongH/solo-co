@@ -45,23 +45,45 @@ CREATE TABLE project_place (
     latitude DOUBLE,
     longitude DOUBLE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'CONFIRMED',
     
 
     FOREIGN KEY (project_id) REFERENCES travel_project(project_id) ON DELETE CASCADE
 );
 
-CREATE TABLE project_itinerary (
-    itinerary_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE project_itinerary_place (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     project_id BIGINT NOT NULL,
-    day INT NOT NULL,               -- Day 1, Day 2...
-    order_no INT NOT NULL,          -- 순서
-    place_name VARCHAR(100) NOT NULL,
-    description TEXT,               -- AI 설명 / 추천 이유
-    safety_score INT,               -- 개인: 혼여 난이도, 치안 등
+    day INT NOT NULL,
+    order_no INT NOT NULL,
+    place_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (project_id) REFERENCES travel_project(project_id) ON DELETE CASCADE
+    FOREIGN KEY (project_id) REFERENCES travel_project(project_id),
+    FOREIGN KEY (place_id) REFERENCES project_place(place_id)
 );
+
+CREATE TABLE project_itinerary_solo_meta (
+    project_id BIGINT PRIMARY KEY,
+    total_score INT,
+    safety INT,
+    transport_accessibility INT,
+    route_simplicity INT,
+    landmark_accessibility INT,
+    solo_dining_difficulty INT,
+    summary TEXT,
+    recommendation VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES travel_project(project_id)
+);
+
+CREATE TABLE project_itinerary_group_meta (
+    project_id BIGINT PRIMARY KEY,
+    summary TEXT,
+    recommended_transport VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES travel_project(project_id)
+);
+
 
 CREATE TABLE project_invite (
     invite_id    BIGINT AUTO_INCREMENT PRIMARY KEY,

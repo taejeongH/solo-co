@@ -12,7 +12,9 @@ public enum ErrorCode {
     INVALID_INVITE_CODE(400, "4001", "유효하지 않은 초대 코드입니다."),
     PROJECT_MEMBER_ALREADY_EXISTS(400, "4002", "이미 프로젝트에 참여한 사용자입니다."),
     PLACE_REQUIRED_FOR_AI(400, "4003", "AI 추천 기능을 사용하려면 최소 1개 이상의 장소가 필요합니다."),
-
+    INVALID_ROUTE_SELECTION(400, "4004", "선택한 경로가 유효하지 않습니다."),
+    INVALID_AI_RESULT(400, "4005", "AI 추천 결과가 유효하지 않습니다."),
+    
     // 401 Unauthorized
     INVALID_LOGIN(401, "4010", "등록되지 않은 이메일 또는 비밀번호가 잘못 입력되었습니다."),
     EXPIRED_TOKEN(401, "4011", "만료된 토큰입니다."),

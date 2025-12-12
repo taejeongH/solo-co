@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.travel.itinerary.mapper.TravelItineraryGroupMetaMapper">
+
+	<delete id="deleteByProjectId">
+        DELETE FROM project_itinerary_group_meta
+        WHERE project_id = #{projectId}
+    </delete>
+
+    <insert id="insertGroupMeta">
+        INSERT INTO project_itinerary_group_meta (
+            project_id,
+            summary,
+            recommended_transport
+        ) VALUES (
+            #{projectId},
+            #{group.summary},
+            #{group.recommendedTransport}
+        )
+    </insert>
+</mapper>
