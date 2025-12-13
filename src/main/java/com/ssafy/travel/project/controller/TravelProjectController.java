@@ -56,7 +56,7 @@ public class TravelProjectController {
     @GetMapping
     public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user, @RequestParam(required = false) String projectType) {
         Long userId = user.getUserId();
-        if (projectType.equals("ALL")) {
+        if (projectType == null || projectType.equals("") || projectType.equals("ALL")) {
         	projectType = null;
         }
         List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(userId, projectType);
