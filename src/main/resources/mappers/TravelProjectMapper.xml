@@ -5,7 +5,7 @@
 
 <mapper namespace="com.ssafy.travel.project.mapper.TravelProjectMapper">
 
-    <select id="findProjectsByUserId" resultType="com.ssafy.travel.project.entity.TravelProject">
+    <select id="findProjectsByUserIdAndType" resultType="com.ssafy.travel.project.entity.TravelProject">
 	    SELECT
 	        tp.project_id   AS projectId,
 	        tp.owner_id     AS ownerId,
@@ -19,6 +19,11 @@
 	    FROM travel_project tp
 	    LEFT JOIN project_member pm ON tp.project_id = pm.project_id
 	    WHERE pm.user_id = #{userId}
+	    
+	    <if test ="projectType != null">
+	    	AND tp.project_type = #{projectType}
+	    </if>
+	    
 	</select>
 	
 	<insert id="createProject" useGeneratedKeys="true" keyProperty="projectId">

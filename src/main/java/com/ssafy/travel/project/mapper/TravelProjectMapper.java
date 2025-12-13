@@ -11,7 +11,7 @@ import com.ssafy.travel.project.entity.TravelProject;
 public interface TravelProjectMapper {
 
 	TravelProject findById(@Param("projectId") Long projectId);
-    List<TravelProject> findProjectsByUserId(Long userId);
+    List<TravelProject> findProjectsByUserIdAndType(Long userId, @Param("projectType") String projectType);
     void createProject(TravelProject project);
     void update(TravelProject project);
     void delete(Long projectId);

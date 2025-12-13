@@ -44,15 +44,14 @@ public class TravelProjectService {
     	else return "DONE";
     }
 
-    public List<TravelProjectResponseDto> getMyProjects(Long userId) {
+    public List<TravelProjectResponseDto> getMyProjects(Long userId, String projectType) {
 
-        List<TravelProject> projects = projectMapper.findProjectsByUserId(userId);
+        List<TravelProject> projects = projectMapper.findProjectsByUserIdAndType(userId, projectType);
         List<TravelProjectResponseDto> result = new ArrayList<>();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         for (TravelProject p : projects) {
-        	System.out.println(p.toString());
             LocalDate start = LocalDate.parse(p.getStartDate(), formatter);
             LocalDate end = LocalDate.parse(p.getEndDate(), formatter);
             String status = calStatus(start, end);

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,11 +54,12 @@ public class TravelProjectController {
             security = @SecurityRequirement(name = "JWT Auth")
     )
     @GetMapping
-    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user, @RequestParam(required = false) String projectType) {
         Long userId = user.getUserId();
-
-        List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(userId);
-
+        if (projectType.equals("ALL")) {
+        	projectType = null;
+        }
+        List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(userId, projectType);
         return ResponseEntity.ok(projects);
     }
     
