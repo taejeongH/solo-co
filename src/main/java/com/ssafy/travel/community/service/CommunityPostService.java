@@ -128,10 +128,10 @@ public class CommunityPostService {
     
 
     
-    public List<ProjectPostListResponseDto> getPostList(Long projectId, Long userId) {
+    public List<ProjectPostListResponseDto> getPostList(Long projectId, Long userId, String query) {
     	checkPermission(projectId, userId);
         
-    	List<ProjectPostListResponseDto> posts = postMapper.findAllPostsByProjectId(projectId);
+    	List<ProjectPostListResponseDto> posts = postMapper.findAllPostsByProjectId(projectId, query);
         for (ProjectPostListResponseDto post : posts) {
             post.setImages(imageMapper.findImagesByPostId(post.getPostId()));
             post.setTags(tagMapper.findTagsByPostId(post.getPostId()));

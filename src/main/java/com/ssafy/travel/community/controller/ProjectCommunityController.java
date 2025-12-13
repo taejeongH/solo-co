@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,8 +61,12 @@ public class ProjectCommunityController {
 	
     @GetMapping
     @Operation(summary = "커뮤니티 게시글 목록 조회")
-    public ResponseEntity<?> getPostList(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long projectId) {
-        return ResponseEntity.ok(postService.getPostList(projectId, user.getUserId()));
+    public ResponseEntity<?> getPostList(
+    		@AuthenticationPrincipal CustomUserDetails user, 
+    		@PathVariable Long projectId,
+    		@RequestParam(required = false) String query
+    		) {
+        return ResponseEntity.ok(postService.getPostList(projectId, user.getUserId(), query));
     }
     
     

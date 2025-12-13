@@ -22,6 +22,9 @@
 	    FROM project_post p
 	    JOIN users u ON p.author_id = u.user_id
 	    WHERE p.project_id = #{projectId}
+	    <if test="query != null and query != ''">
+		    AND (p.title LIKE CONCAT('%', #{query}, '%') OR p.content LIKE CONCAT('%', #{query}, '%'))
+		</if>
 	    ORDER BY p.created_at DESC
 	</select>
     
