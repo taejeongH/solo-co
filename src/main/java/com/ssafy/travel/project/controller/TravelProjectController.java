@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.global.security.CustomUserDetails;
+import com.ssafy.travel.project.dto.TravelProjectDetailResponseDto;
 import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.service.TravelProjectInviteService;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
+@SecurityRequirement(name = "JWT Auth")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/travels")
@@ -35,7 +37,7 @@ public class TravelProjectController {
     private final TravelProjectInviteService inviteService;
     
     @PutMapping("/{projectId}")
-    @Operation(summary = "여행 프로젝트 수정", security = @SecurityRequirement(name = "JWT Auth"))
+    @Operation(summary = "여행 프로젝트 수정")
     public ResponseEntity<?> getPlaces(
     		@AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long projectId, 
@@ -50,8 +52,7 @@ public class TravelProjectController {
     
     @Operation(
             summary = "내 여행 목록 조회",
-            description = "로그인한 사용자의 개인/그룹 여행 프로젝트 목록 조회",
-            security = @SecurityRequirement(name = "JWT Auth")
+            description = "로그인한 사용자의 개인/그룹 여행 프로젝트 목록 조회"
     )
     @GetMapping
     public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user, @RequestParam(required = false) String projectType) {
@@ -64,7 +65,7 @@ public class TravelProjectController {
     }
     
     @PostMapping
-    @Operation(summary = "여행 프로젝트 생성", security = @SecurityRequirement(name = "JWT Auth"))
+    @Operation(summary = "여행 프로젝트 생성")
     public ResponseEntity<TravelProjectResponseDto> createProject(
     		@AuthenticationPrincipal CustomUserDetails user,
     		@RequestPart TravelProjectRequestDto dto, 
@@ -77,13 +78,24 @@ public class TravelProjectController {
     }
     
     @DeleteMapping("/{projectId}")
-    @Operation(summary = "여행 프로젝트 삭제", security = @SecurityRequirement(name = "JWT Auth"))
+    @Operation(summary = "여행 프로젝트 삭제")
     public ResponseEntity<?> deleteProject(
             @PathVariable Long projectId,
             @AuthenticationPrincipal CustomUserDetails user) {
 
         travelProjectService.deleteProject(projectId, user.getUserId());
         return ResponseEntity.ok("프로젝트가 삭제되었습니다.");
+    }
+    
+    @Operation(summary = "여행 목록 상세 조회")
+    @GetMapping("/{projectId}")
+    public ResponseEntity<TravelProjectDetailResponseDto> getProjectDetail(
+    		@PathVariable Long projectId,
+    		@AuthenticationPrincipal CustomUserDetails user) {
+        Long userId = user.getUserId();
+        
+        TravelProjectDetailResponseDto projects = travelProjectService.getProjectDetail(userId, projectId);
+        return ResponseEntity.ok(projects);
     }
 
 
