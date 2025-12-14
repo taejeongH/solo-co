@@ -15,6 +15,8 @@ import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.global.service.S3Service;
 import com.ssafy.travel.itinerary.mapper.TravelItineraryMapper;
 import com.ssafy.travel.place.mapper.TravelProjectPlaceMapper;
+import com.ssafy.travel.project.dto.TravelProjectDetailResponseDto;
+import com.ssafy.travel.project.dto.TravelProjectMemberResponseDto;
 import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
 import com.ssafy.travel.project.entity.TravelProject;
@@ -183,6 +185,47 @@ public class TravelProjectService {
 
         // 4) 마지막으로 프로젝트 삭제
         projectMapper.delete(projectId);
+    }
+    
+    public TravelProjectDetailResponseDto getProjectDetail(Long userId, Long projectId) {
+    	validate(userId, projectId);
+    	List<TravelProjectMemberResponseDto> members = projectMemberMapper.findMembers(projectId);
+    	TravelProject p = projectMapper.findById(projectId);
+    	
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    	LocalDate start = LocalDate.parse(p.getStartDate(), formatter);
+        LocalDate end = LocalDate.parse(p.getEndDate(), formatter);
+        String status = calStatus(start, end);
+    	
+    	TravelProjectResponseDto dto = new TravelProjectResponseDto();
+        dto.setProjectId(p.getProjectId());
+        dto.setTitle(p.getTitle());
+        dto.setStartDate(p.getStartDate());
+        dto.setEndDate(p.getEndDate());
+        dto.setThumbnail(p.getThumbnail());
+        dto.setLocation(p.getLocation());
+        dto.setProjectType(p.getProjectType());
+        dto.setStatus(status);
+        dto.setMemberCount(members.size());
+        
+        TravelProjectDetailResponseDto response = new TravelProjectDetailResponseDto();
+        response.setMembers(members);
+        response.setProject(dto);
+    	
+    	return response;
+    }
+    
+    public void validate(Long userId, Long projectId) {
+    	// 1. 프로젝트 유효성 체크
+        TravelProject project = projectMapper.findById(projectId);
+        if (project == null) {
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+
+        // 2. 멤버 권한 체크
+        if (!projectMemberMapper.isMember(projectId, userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
     }
     
 }
