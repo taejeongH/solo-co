@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
 import com.ssafy.travel.itinerary.dto.GroupItineraryCandidateResponseDto;
+import com.ssafy.travel.itinerary.dto.GroupItineraryMetaResponseDto;
 
 @Mapper
 public interface TravelItineraryGroupMetaMapper {
@@ -13,4 +14,6 @@ public interface TravelItineraryGroupMetaMapper {
         @Param("projectId") Long projectId,
         @Param("group") GroupItineraryCandidateResponseDto group
     );
+
+    GroupItineraryMetaResponseDto findMetaByProjectId(@Param("projectId") Long projectId);
 }

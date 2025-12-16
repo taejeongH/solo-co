@@ -23,4 +23,25 @@
         )
     </insert>
 
+    <select id="findPlacesByProjectId" resultType="com.ssafy.travel.itinerary.dto.ItineraryPlaceResponseDto">
+        SELECT
+            pip.order_no AS "order",
+            p.place_id AS placeId,
+            p.place_name AS placeName,
+            p.place_address AS address,
+            p.place_type AS placeType,
+            p.latitude AS latitude,
+            p.longitude AS longitude,
+            p.thumbnail as thumbnail,
+            pip.day as day
+        FROM
+            project_itinerary_place pip
+                JOIN
+            project_place p ON pip.place_id = p.place_id
+        WHERE
+            pip.project_id = #{projectId}
+        ORDER BY
+            pip.day, pip.order_no
+    </select>
+
 </mapper>

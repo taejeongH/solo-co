@@ -16,4 +16,13 @@
             #{group.summary}
         )
     </insert>
+
+    <select id="findMetaByProjectId" resultType="com.ssafy.travel.itinerary.dto.GroupItineraryMetaResponseDto">
+        SELECT
+            summary
+        FROM
+            project_itinerary_group_meta
+        WHERE
+            project_id = #{projectId}
+    </select>
 </mapper>

@@ -30,4 +30,19 @@
             #{solo.recommendation}
         )
     </insert>
+
+    <select id="findMetaByProjectId" resultType="com.ssafy.travel.itinerary.dto.SoloItineraryMetaResponseDto">
+        SELECT
+            total_score AS totalScore,
+            safety,
+            transport_accessibility AS transportAccessibility,
+            route_simplicity AS routeSimplicity,
+            landmark_accessibility AS landmarkAccessibility,
+            solo_dining_difficulty AS soloDiningDifficulty,
+            summary
+        FROM
+            project_itinerary_solo_meta
+        WHERE
+            project_id = #{projectId}
+    </select>
 </mapper>
