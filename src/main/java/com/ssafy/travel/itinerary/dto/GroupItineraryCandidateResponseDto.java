@@ -14,8 +14,4 @@ import lombok.NoArgsConstructor;
 public class GroupItineraryCandidateResponseDto extends ItineraryCandidateResponseDto {
 	
     private String summary;
-    @JsonProperty("recommended_transport")
-    private String recommendedTransport;
-    
-    String reason;
 }

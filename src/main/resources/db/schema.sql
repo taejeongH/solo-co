@@ -79,7 +79,6 @@ CREATE TABLE project_itinerary_solo_meta (
 CREATE TABLE project_itinerary_group_meta (
     project_id BIGINT PRIMARY KEY,
     summary TEXT,
-    recommended_transport VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES travel_project(project_id)
 );

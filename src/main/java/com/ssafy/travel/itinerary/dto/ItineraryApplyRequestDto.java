@@ -8,5 +8,5 @@ import lombok.Data;
 public class ItineraryApplyRequestDto {
 
     private String aiResultId;
-    private String routeType;
+    private int routeType;
 }

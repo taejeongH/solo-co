@@ -14,212 +14,91 @@ public class SoloTravelPromptBuilder {
         StringBuilder list = new StringBuilder();
         for (TravelProjectPlace p : places) {
             list.append(String.format(
-                "- placeId: %d, placeName: %s",
+                "- placeId: %d, placeName: %s, latitude: %f, longitude: %f%n",
                 p.getPlaceId(),
-                p.getPlaceName()
+                p.getPlaceName(),
+                p.getLatitude(),
+                p.getLongitude()
             ));
         }
 
         return """
-        사용자가 혼자 여행할 때 방문할 예정인 장소 목록은 다음과 같다:
-
+        사용자가 혼자 여행할 예정이며, 방문할 장소 목록(위도, 경도 포함)과 여행 기간은 다음과 같다:
+        - 방문 장소:
         %s
+        - 여행 기간: 총 %d일
 
-        여행 기간은 총 %d일이다.
-
-        ---------------------------------------------------------
-        IMPORTANT RULES (반드시 지켜야 함)
-        ---------------------------------------------------------
-        1) placeId는 서버 DB의 고유 식별자(Long)이다.
-        2) 입력으로 제공된 placeId는 절대 수정/변경/재생성/재번호매기기 하지 마라.
-        3) 기존 장소(newPlace=false)는 반드시 "입력으로 받은 placeId"를 그대로 사용해야 한다.
-        4) 새로운 장소(newPlace=true)를 추천하는 경우:
-           - placeId는 반드시 JSON null 로 설정한다. (문자열 "null" 금지)
-           - newPlace 는 반드시 true
-        5) 숫자 placeId를 새로 생성하는 행위는 절대 금지한다.
-        6) 아래 PLACE OBJECT 규칙을 하나라도 어기면 결과는 무효이다.
-           - days 배열의 구조는 이미 완성되어 있다.
-           - 너는 days 배열 안의 "places" 배열의 값만 채운다.
-           - days 배열 자체를 늘리거나 줄이거나 새로 만들면 안 된다.
-        7) summary 필드는 절대 빈 문자열로 두지 말고, 각 코스의 특징을 1~2문장으로 반드시 작성하라.
-        8) recommendation 필드는 절대 빈 문자열로 두지 말고, 혼자 여행하는 사람에게
-           도움이 되는 구체적인 조언을 반드시 작성하라.
-        9) soloScore의 모든 항목은 반드시 1~100 사이의 정수로 채워야 한다.
+        너의 임무는 이 정보를 바탕으로 총 4개의 여행 코스 제안을 생성하는 것이다.
 
         ---------------------------------------------------------
-        PLACE OBJECT 규칙 (가장 중요)
+        IMPORTANT RULES (반드시 지켜야 할 핵심 규칙)
         ---------------------------------------------------------
-        - days[].places[] 안의 각 place 객체는 반드시 아래 5개 필드를 "모두 포함"해야 한다.
-        - 기존 장소(newPlace=false)도 placeName를 절대 생략하면 안 된다.
-        - 어떤 경우에도 필드 누락, 축약, 일부만 출력은 금지한다.
+        0.  **경로 최적화 규칙:**
+            -   제공된 장소들의 위도, 경도(`latitude`, `longitude`) 정보를 반드시 사용하여 이동 거리가 최소화되도록 경로를 최적화해야 한다.
+            -   지리적으로 가까운 장소들은 같은 날 방문하도록 일정을 구성하라.
 
-        각 place 객체 형식 (필드명/필드수 절대 변경 금지):
-        {
-          "placeId": number | null,
-          "placeName": string,
-          "newPlace": boolean
-        }
+        1.  **장소(Place) 규칙:**
+            -   입력으로 제공된 장소의 `placeId`는 절대 변경하거나 새로 만들지 마라.
+            -   새로운 장소를 추천할 경우, `placeId`는 반드시 `null`로, `newPlace`는 `true`로 설정해야 한다.
+            -   새롭게 추천하는 장소는 '홍대 거리'나 '분위기 좋은 카페'처럼 모호한 장소가 아닌, Google 지도에서 검색 가능한 실제 장소의 정확한 명칭이어야 한다.
 
+        2.  **코스 생성 규칙 (총 4개):**
+            -   **`routeType` 1, 2, 3 (3개):**
+                -   `routeType` 필드에 각각 1, 2, 3을 순서대로 할당한다.
+                -   반드시 입력으로 제공된 장소만 사용해야 한다. (새로운 장소 추천 금지)
+                -   여행 기간(%d일)을 모두 활용하여 하루에 2~4개의 장소로 일정을 구성한다.
+            -   **`routeType` 4 (1개):**
+                -   `routeType` 필드에 4를 할당한다.
+                -   이 코스는 다음 두 가지 조건을 **모두** 만족해야 한다:
+                    1. 입력으로 제공된 기존 장소들을 활용할 것.
+                    2. 혼자 여행하는 사람의 특성을 고려하여 **최소 1개 이상의 새로운 장소를 반드시 추가**할 것.
+                -   `routeMeta.reason` 필드에 왜 새로운 장소를 추가했는지 등 최적화 이유를 명확하게 작성한다.
+
+        3.  **필수 값 규칙:**
+            -   `summary` 필드는 각 코스의 특징을 1~2문장으로 요약하여 반드시 작성한다.
+            -   `recommendation` 필드는 혼자 여행하는 사람에게 도움이 될 구체적인 조언을 반드시 작성한다.
+
+        4.  **soloScore 점수 계산 규칙 (매우 중요):**
+            -   **임의의 숫자를 절대 사용하지 마라.** 모든 점수는 아래의 기준에 따라 논리적으로 계산되어야 한다.
+            -   너의 방대한 지식을 활용하여 각 장소의 주소, 종류, 일반적인 특징을 바탕으로 점수를 산출하라.
+
+            -   **`totalScore` (종합 점수):**
+                -   `totalScore`는 아래 5개 항목 점수의 산술 평균으로 계산한다.
+                -   `safety`, `transportAccessibility`, `routeSimplicity`, `landmarkAccessibility`
+                -   **주의:** `soloDiningDifficulty`는 점수가 낮을수록 좋은 항목이므로, 평균 계산 시에는 `(100 - soloDiningDifficulty)` 값으로 변환하여 사용한다.
+
+            -   **`safety` (안전성):**
+                -   해당 장소의 주소와 지역의 일반적인 치안 수준을 고려하라.
+                -   주변에 유흥업소가 많거나, 밤늦게 혼자 다니기 위험한 곳은 낮은 점수를 부여한다.
+                -   관광객이 많고 잘 알려진 공공장소는 높은 점수를 부여한다.
+
+            -   **`transportAccessibility` (교통 편의성):**
+                -   장소의 위치(위도/경도)를 기반으로 대중교통(지하철, 버스) 접근성을 평가하라.
+                -   주요 역에서 가깝거나 버스 노선이 많으면 높은 점수를 부여한다.
+                -   도보 이동이 길거나 교통편이 불편한 외진 곳은 낮은 점수를 부여한다.
+
+            -   **`routeSimplicity` (경로 단순성):**
+                -   하루 동안의 코스 전체를 평가하는 점수이다.
+                -   방문할 장소들이 지리적으로 가깝고, 이동 경로가 단순하고 효율적일수록 높은 점수를 부여한다.
+                -   하루에 방문하는 장소 수가 적절하고(2~3개) 동선이 깔끔하면 점수를 높게 책정한다.
+
+            -   **`landmarkAccessibility` (관광지 접근성):**
+                -   혼자서도 그 장소를 온전히 즐길 수 있는지를 평가한다.
+                -   예약 없이 방문 가능하거나, 1인용 티켓 구매가 용이한 곳은 높은 점수를 부여한다.
+                -   그룹 단위 예약만 가능하거나, 혼자 즐기기 어색한 곳(예: 대규모 그룹 활동 장소)은 낮은 점수를 부여한다.
+
+            -   **`soloDiningDifficulty` (혼밥 난이도 - 낮을수록 좋음):**
+                -   해당 장소 또는 그 주변의 식사 환경을 평가한다.
+                -   점수가 낮을수록 혼자 식사하기 쉽다는 의미이다.
+                -   카페, 푸드코트, 패스트푸드, 1인 식당이 많은 지역은 낮은 점수(10~30점)를 부여한다.
+                -   주로 2인 이상 테이블만 있거나, 격식 있는 레스토랑, 단체 손님 위주의 식당이 많은 곳은 높은 점수(70~90점)를 부여한다.
+
+            -   **`scoreJustification` (점수 산출 이유):**
+                -   `safety`, `transportAccessibility`, `routeSimplicity`, `landmarkAccessibility`, `soloDiningDifficulty` 각각의 점수를 어떻게 산출했는지에 대한 구체적인 이유를 한 문장으로 작성해야 한다.
+                -   `scoreJustification` 필드에 각 점수 항목의 이름(`safety` 등)을 key로, 해당 이유를 value로 하는 Map 형태로 채워야 한다.
         ---------------------------------------------------------
-        NEW PLACE (실존 장소 강제 규칙)
-        ---------------------------------------------------------
-        새로운 장소(placeId=null, newPlace=true)는 반드시
-        Google Places에서 실제로 검색 가능한
-        구체적인 단일 장소명 이어야 한다.
-        
-        이 서비스에서 장소(place)란 다음 조건을 모두 만족해야 합니다.
-
-		- 하나의 명확한 지점(Point of Interest)이어야 합니다.
-		- 공식 명칭이 존재하며 Google 지도에서 검색 가능한 장소여야 합니다.
-		- Google Places API (Text Search)로 조회 가능한 장소여야 합니다.
-		- 거리, 동네, 지역, 구역과 같은 포괄적인 개념은 장소로 취급하지 않습니다.
-
-        ❌ 금지 예시:
-        - 새로운 카페
-        - 감성 카페
-        - 힐링 스팟
-        - 전망 좋은 장소
-        - 유명한 공원
-        - 핫플
-        - 거리, 골목, 산책로 (예: 익선동 한옥거리, 명동 거리)
-		- 동네, 지역, 구역 (예: 홍대, 성수동, 북촌)
-		- 하나의 지도 핀으로 표시할 수 없는 장소
-		- Google Places API에서 검색되지 않는 장소
-
-
-        이 규칙을 위반하면 결과는 즉시 폐기된다.
-
-        ---------------------------------------------------------
-        출력 목적
-        ---------------------------------------------------------
-        총 4개의 코스를 JSON 배열로 생성하라.
-        routeType은 아래 4개로 고정한다:
-
-        - "standard_1"
-        - "standard_2"
-        - "standard_3"
-        - "creative_optimized"
-
-        규칙:
-        1) standard_1~3
-            - 반드시 입력으로 제공된 장소만 사용
-            - placeId는 그대로 유지
-            - day별 2~4개 장소
-            - 여행 기간 %d일을 모두 포함
-
-        2) creative_optimized
-            - 반드시 최소 1개 이상의 새로운 장소를 포함해야 한다.
-            - 새로운 장소는 입력에 없는 장소여야 한다.
-            - 새로운 장소는 placeId=null, newPlace=true로 표현한다.
-            - 혼자 여행 기준으로 안전성, 이동 편의성, 혼밥 난이도 개선에 초점을 둔다.
-            - routeMeta.reason에 변경 이유를 명확히 작성한다.
-
-        ---------------------------------------------------------
-        JSON 템플릿 (절대 구조 수정 금지)
-        ---------------------------------------------------------
-        [
-          {
-            "routeType": "standard_1",
-            "days": %s,
-            "soloScore": {
-              "totalScore": 0,
-              "safety": 0,
-              "transportAccessibility": 0,
-              "routeSimplicity": 0,
-              "landmarkAccessibility": 0,
-              "soloDiningDifficulty": 0
-            },
-            "summary": "",
-            "recommendation": "",
-            "routeMeta": {
-              "reason": ""
-            }
-          },
-          {
-            "routeType": "standard_2",
-            "days": %s,
-            "soloScore": {
-              "totalScore": 0,
-              "safety": 0,
-              "transportAccessibility": 0,
-              "routeSimplicity": 0,
-              "landmarkAccessibility": 0,
-              "soloDiningDifficulty": 0
-            },
-            "summary": "",
-            "recommendation": "",
-            "routeMeta": {
-              "reason": ""
-            }
-          },
-          {
-            "routeType": "standard_3",
-            "days": %s,
-            "soloScore": {
-              "totalScore": 0,
-              "safety": 0,
-              "transportAccessibility": 0,
-              "routeSimplicity": 0,
-              "landmarkAccessibility": 0,
-              "soloDiningDifficulty": 0
-            },
-            "summary": "",
-            "recommendation": "",
-            "routeMeta": {
-              "reason": ""
-            }
-          },
-          {
-            "routeType": "creative_optimized",
-            "days": %s,
-            "soloScore": {
-              "totalScore": 0,
-              "safety": 0,
-              "transportAccessibility": 0,
-              "routeSimplicity": 0,
-              "landmarkAccessibility": 0,
-              "soloDiningDifficulty": 0
-            },
-            "summary": "",
-            "recommendation": "",
-            "routeMeta": {
-              "reason": ""
-            }
-          }
-        ]
-
-        ---------------------------------------------------------
-        출력 규칙
-        ---------------------------------------------------------
-        1) JSON 외의 다른 텍스트 출력 금지
-        2) 반드시 한 줄(minified) JSON으로 출력
-        3) null은 문자열이 아닌 JSON null로 출력
-        4) summary, recommendation, soloScore, routeMeta.reason은 절대 빈 값 금지
-
-        ---------------------------------------------------------
-        최종 출력: 한 줄 JSON only
-        ---------------------------------------------------------
-        """.formatted(
-            list,
-            tripDays,
-            tripDays,
-            buildDaysTemplate(tripDays),
-            buildDaysTemplate(tripDays),
-            buildDaysTemplate(tripDays),
-            buildDaysTemplate(tripDays)
-        );
+        """.formatted(list, tripDays, tripDays);
     }
 
-    private String buildDaysTemplate(int tripDays) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (int i = 1; i <= tripDays; i++) {
-            sb.append("""
-                {"day":%d,"places":[]}
-            """.formatted(i));
-            if (i < tripDays) sb.append(",");
-        }
-        sb.append("]");
-        return sb.toString();
-    }
+
 }
