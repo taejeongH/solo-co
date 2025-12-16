@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
 import com.ssafy.travel.itinerary.dto.SoloItineraryCandidateResponseDto;
+import com.ssafy.travel.itinerary.dto.SoloItineraryMetaResponseDto;
 
 @Mapper
 public interface TravelItinerarySoloMetaMapper {
@@ -14,4 +15,6 @@ public interface TravelItinerarySoloMetaMapper {
         @Param("projectId") Long projectId,
         @Param("solo") SoloItineraryCandidateResponseDto solo
     );
+
+    SoloItineraryMetaResponseDto findMetaByProjectId(@Param("projectId") Long projectId);
 }

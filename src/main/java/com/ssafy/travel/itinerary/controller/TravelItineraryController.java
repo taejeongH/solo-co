@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.ai.dto.AutoGenerateResponse;
 import com.ssafy.travel.itinerary.dto.ItineraryApplyRequestDto;
+import com.ssafy.travel.itinerary.dto.ItineraryResponseDto;
 import com.ssafy.travel.itinerary.service.TravelItineraryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,13 @@ public class TravelItineraryController {
 
     private final TravelItineraryService itineraryService;
     private final ChatClient chatClient;
+
+    @GetMapping("/{projectId}/itinerary")
+    @Operation(summary = "여행 경로 조회", security = @SecurityRequirement(name = "JWT Auth"))
+    public ResponseEntity<ItineraryResponseDto> getItinerary(@PathVariable long projectId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        ItineraryResponseDto itinerary = itineraryService.getItinerary(projectId, userDetails.getUserId());
+        return ResponseEntity.ok(itinerary);
+    }
 
     @PostMapping("/{projectId}/itinerary/auto-generate")
     @Operation(summary = "여행 경로 AI 추천", security = @SecurityRequirement(name = "JWT Auth"))
