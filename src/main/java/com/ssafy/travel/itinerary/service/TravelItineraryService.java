@@ -212,9 +212,9 @@ public class TravelItineraryService {
     
     //선택된 여행 루트 반환
     @SuppressWarnings("unchecked")
-    private ItineraryCandidateResponseDto findSelectedCandidate(List<ItineraryCandidateResponseDto> candidates, String routeType) {
+    private ItineraryCandidateResponseDto findSelectedCandidate(List<ItineraryCandidateResponseDto> candidates, int routeType) {
     	return (ItineraryCandidateResponseDto) candidates.stream()
-                .filter(c -> c.getRouteType().equals(routeType))
+                .filter(c -> c.getRouteType() == routeType)
                 .findFirst()
                 .orElseThrow(() ->
                     new CustomException(ErrorCode.INVALID_ROUTE_SELECTION)

@@ -10,12 +10,10 @@
     <insert id="insertGroupMeta">
         INSERT INTO project_itinerary_group_meta (
             project_id,
-            summary,
-            recommended_transport
+            summary
         ) VALUES (
             #{projectId},
-            #{group.summary},
-            #{group.recommendedTransport}
+            #{group.summary}
         )
     </insert>
 </mapper>

@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ItineraryCandidateResponseDto {
 
-	private String routeType; 
+	private int routeType; 
     private List<ItineraryDayDto> days;
+    private String reason;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Data

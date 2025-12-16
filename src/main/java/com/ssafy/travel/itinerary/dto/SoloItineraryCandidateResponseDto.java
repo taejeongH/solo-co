@@ -1,5 +1,7 @@
 package com.ssafy.travel.itinerary.dto;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
@@ -8,10 +10,9 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SoloItineraryCandidateResponseDto extends ItineraryCandidateResponseDto{
 	
-	private SoloItineraryScoreDto soloScore;
     private String summary;
     private String recommendation;
-    private ItineraryRouteMetaDto routeMeta;
+    private SoloItineraryScoreDto soloScore;
     
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Data
@@ -22,11 +23,6 @@ public class SoloItineraryCandidateResponseDto extends ItineraryCandidateRespons
         private int routeSimplicity;
         private int landmarkAccessibility;
         private int soloDiningDifficulty;
-    }
-    
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    @Data
-    public static class ItineraryRouteMetaDto {
-        private String reason;
+        private Map<String, String> scoreJustification;
     }
 }
