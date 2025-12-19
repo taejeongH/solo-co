@@ -165,7 +165,11 @@ public class CommunityPostService {
         post.setVote(vote);
 
         // 댓글
-        post.setComments(commentMapper.findCommentsByPostId(postId));
+        List<com.ssafy.travel.community.dto.response.CommentResponseDto> comments = commentMapper.findCommentsByPostId(postId);
+        comments.forEach(comment -> {
+            comment.setCanDelete(comment.getUserId().equals(userId));
+        });
+        post.setComments(comments);
 
         return post;
     }
