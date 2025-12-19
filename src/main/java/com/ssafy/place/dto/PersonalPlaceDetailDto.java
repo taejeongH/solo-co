@@ -21,6 +21,7 @@ public class PersonalPlaceDetailDto {
     private double rating;
     private int userRatingsTotal;
     private int soloScore;     // 혼밥 난이도
+    private String scoreJustification; // AI의 점수 산출 근거
     private List<String> tags;      // 자동 추출 태그
 
     private List<String> types;

@@ -15,6 +15,11 @@ import com.ssafy.travel.ai.prompt.GroupTravelPromptBuilder;
 import com.ssafy.travel.ai.prompt.SoloTravelPromptBuilder;
 import com.ssafy.travel.itinerary.dto.GroupItineraryCandidateResponseDto;
 import com.ssafy.travel.itinerary.dto.ItineraryCandidateResponseDto;
+import org.springframework.cache.annotation.Cacheable;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.ssafy.place.ai.dto.SoloPlaceAnalysisDto;
+import com.ssafy.place.ai.prompt.PlaceAnalysisPromptBuilder;
 import com.ssafy.travel.itinerary.dto.SoloItineraryCandidateResponseDto;
 import com.ssafy.travel.place.entity.TravelProjectPlace;
 
@@ -24,12 +29,30 @@ public class AIService {
     private final ChatClient openAiChatClient;
     private final GroupTravelPromptBuilder groupPromptBuilder;
     private final SoloTravelPromptBuilder soloPromptBuilder;
+    private final PlaceAnalysisPromptBuilder placeAnalysisPromptBuilder;
     
-    public AIService(@Qualifier("openAiChatClient") ChatClient openAiChatClient, GroupTravelPromptBuilder groupPromptBuilder, SoloTravelPromptBuilder soloPromptBuilder) {
-    	this.openAiChatClient = openAiChatClient;
-    	this.groupPromptBuilder = groupPromptBuilder;
-    	this.soloPromptBuilder = soloPromptBuilder;
-	}
+    public AIService(@Qualifier("openAiChatClient") ChatClient openAiChatClient, GroupTravelPromptBuilder groupPromptBuilder, SoloTravelPromptBuilder soloPromptBuilder, PlaceAnalysisPromptBuilder placeAnalysisPromptBuilder) {
+        this.openAiChatClient = openAiChatClient;
+        this.groupPromptBuilder = groupPromptBuilder;
+        this.soloPromptBuilder = soloPromptBuilder;
+        this.placeAnalysisPromptBuilder = placeAnalysisPromptBuilder;
+    }
+
+    @Cacheable(value = "soloPlaceAnalysis", key = "#placeDetails.path('place_id').asText()")
+    public SoloPlaceAnalysisDto analyzePlaceForSoloTravel(JsonNode placeDetails) {
+        try {
+            var outputConverter = new BeanOutputConverter<>(new ParameterizedTypeReference<SoloPlaceAnalysisDto>() {});
+            String prompt = placeAnalysisPromptBuilder.build(placeDetails) + "\n" + outputConverter.getFormat();
+
+            return openAiChatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .entity(outputConverter);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Solo place analysis AI generation failed", e);
+        }
+    }
 
     public List<GroupItineraryCandidateResponseDto> generateGroupItinerary(int tripDays, List<TravelProjectPlace> places) {
     	try {
