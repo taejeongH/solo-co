@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.global.security.CustomUserDetails;
-import com.ssafy.travel.ai.dto.AutoGenerateResponse;
+import com.ssafy.ai.dto.AutoGenerateResponse;
 import com.ssafy.travel.itinerary.dto.ItineraryApplyRequestDto;
 import com.ssafy.travel.itinerary.dto.ItineraryResponseDto;
 import com.ssafy.travel.itinerary.service.TravelItineraryService;

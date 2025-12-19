@@ -1,4 +1,4 @@
-package com.ssafy.place.ai.dto;
+package com.ssafy.ai.dto;
 
 import java.util.List;
 

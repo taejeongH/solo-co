@@ -1,4 +1,4 @@
-package com.ssafy.travel.ai.dto;
+package com.ssafy.ai.dto;
 
 import lombok.Data;
 

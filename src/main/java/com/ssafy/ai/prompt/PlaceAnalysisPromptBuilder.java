@@ -1,4 +1,4 @@
-package com.ssafy.place.ai.prompt;
+package com.ssafy.ai.prompt;
 
 import java.util.ArrayList;
 import java.util.List;
