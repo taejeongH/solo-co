@@ -46,7 +46,7 @@ public class PlaceService {
 	@Cacheable("places")
 	public PlaceSearchResponseDto searchPlaces(String query, String location, String type, String nextPageToken) {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder
-				.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/textsearch/json")
+				.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/textsearch/json")
 				.queryParam("query", query)
 				.queryParam("key", googlePlacesApiKey)
 				.queryParam("language", "ko");
@@ -126,7 +126,7 @@ public class PlaceService {
         String fields = "place_id,name,formatted_address,rating,user_ratings_total,price_level,types,opening_hours,photos";
 
         String url = UriComponentsBuilder
-                .fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+                .fromUriString(GOOGLE_PLACES_API_BASE_URL + "/details/json")
                 .queryParam("place_id", placeId)
                 .queryParam("fields", fields)
                 .queryParam("key", googlePlacesApiKey)
@@ -180,7 +180,7 @@ public class PlaceService {
 
 	private PlaceDto getGroupPlaceBriefDetails(String placeId) {
 		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos,geometry"; // Request 'photos' and 'geometry' fields
-		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+		String url = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/details/json")
 				.queryParam("place_id", placeId)
 				.queryParam("fields", fields)
 				.queryParam("key", googlePlacesApiKey)
@@ -268,7 +268,7 @@ public class PlaceService {
 	            "rating,user_ratings_total,opening_hours,reviews,photos,geometry,business_status,types,price_level";
 
 	    String url = UriComponentsBuilder
-	            .fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+	            .fromUriString(GOOGLE_PLACES_API_BASE_URL + "/details/json")
 	            .queryParam("place_id", placeId)
 	            .queryParam("fields", fields)
 	            .queryParam("key", googlePlacesApiKey)
@@ -350,7 +350,7 @@ public class PlaceService {
 
 	private PlaceDetailDto getGroupPlaceFullDetails(String placeId) {
 		String fields = "place_id,name,formatted_address,formatted_phone_number,website,url,rating,user_ratings_total,opening_hours,reviews,photos,geometry,business_status,vicinity";
-		String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+		String url = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/details/json")
 				.queryParam("place_id", placeId)
 				.queryParam("fields", fields)
 				.queryParam("key", googlePlacesApiKey)
@@ -446,7 +446,7 @@ public class PlaceService {
 		if (photoReference == null || photoReference.isEmpty()) {
 			return null;
 		}
-		return UriComponentsBuilder.fromHttpUrl(GOOGLE_PLACES_API_BASE_URL + "/photo")
+		return UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
 				.queryParam("maxwidth", maxWidth)
 				.queryParam("photoreference", photoReference)
 				.queryParam("key", googlePlacesApiKey)
