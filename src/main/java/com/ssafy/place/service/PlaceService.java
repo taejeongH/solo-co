@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
-import com.ssafy.place.domain.PlaceContext;
+import com.ssafy.place.ai.dto.SoloPlaceAnalysisDto;
 import com.ssafy.place.dto.PersonalPlaceDetailDto;
 import com.ssafy.place.dto.PersonalPlaceDto;
 import com.ssafy.place.dto.PlaceDetailDto;
@@ -24,6 +24,7 @@ import com.ssafy.place.dto.PlaceDetailDto.ReviewDto;
 import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.dto.PlaceSearchItemDto;
 import com.ssafy.place.dto.PlaceSearchResponseDto;
+import com.ssafy.travel.ai.service.AIService;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 
@@ -40,6 +41,7 @@ public class PlaceService {
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 	private final TravelProjectMapper travelProjectMapper;
+	private final AIService aiService;
 
 	@Cacheable("places")
 	public PlaceSearchResponseDto searchPlaces(String query, String location, String type, String nextPageToken) {
@@ -156,29 +158,16 @@ public class PlaceService {
 				}
 			}
 			
-			int soloScore = calculateSoloScore(
-				    result.path("rating").asDouble(0.0),
-				    result.path("user_ratings_total").asInt(0),
-				    result.path("price_level").asInt(-1),
-				    result.path("opening_hours").path("open_now").asBoolean(false),
-				    types
-				);
-
-
-            List<String> tags = extractSoloTags(
-                    result.path("user_ratings_total").asInt(0),
-                    result.path("price_level").asInt(2),
-                    result.path("rating").asDouble(0.0),
-                    types
-            );
+            SoloPlaceAnalysisDto analysis = aiService.analyzePlaceForSoloTravel(result);
 
             return PersonalPlaceDto.builder()
                     .placeId(result.path("place_id").asText())
                     .name(result.path("name").asText())
                     .formattedAddress(result.path("formatted_address").asText())
                     .rating(result.path("rating").asDouble(0.0))
-                    .soloDifficulty(soloScore)
-                    .tags(tags)
+                    .soloDifficulty(analysis.getSoloDifficultyScore())
+                    .scoreJustification(analysis.getScoreJustification())
+                    .tags(analysis.getTags())
                     .types(types)
                     .photoUrls(photoUrls)
                     .build();
@@ -304,11 +293,8 @@ public class PlaceService {
 
 	        int reviewCount = result.path("user_ratings_total").asInt(0);
 	        double rating = result.path("rating").asDouble(0.0);
-	        int priceLevel = result.path("price_level").asInt(-1);
-	        boolean isOpenNow = result.path("opening_hours").path("open_now").asBoolean(false);
 
-	        int difficulty = calculateSoloScore(rating, reviewCount, priceLevel, isOpenNow, types);
-	        List<String> tags = extractSoloTags(reviewCount, priceLevel, rating, types);
+	        SoloPlaceAnalysisDto analysis = aiService.analyzePlaceForSoloTravel(result);
 	        
 	        List<String> photoUrls = Collections.emptyList();
 			if (result.has("photos") && result.path("photos").isArray()) {
@@ -346,8 +332,9 @@ public class PlaceService {
 	                .userRatingsTotal(reviewCount)
 	                .photoUrls(photoUrls)
 	                .types(types)
-	                .soloScore(difficulty)
-	                .tags(tags)
+	                .soloScore(analysis.getSoloDifficultyScore())
+	                .scoreJustification(analysis.getScoreJustification())
+	                .tags(analysis.getTags())
 	                .businessStatus(result.path("business_status").asText(null))
 	                .geometry(geometryMap)
 	                .website(result.path("website").asText(null)).url(result.path("url").asText(null))
@@ -466,181 +453,4 @@ public class PlaceService {
 				.queryParam("language", "ko").build(false)
 				.toUriString();
 	}
-	
-	// ✅ 혼밥 난이도 계산 (현실 기준)
-	private int calculateSoloScore(double rating, int reviewCount, int priceLevel, boolean isOpenNow, List<String> types) {
-		if (types == null) types = List.of();
-	    PlaceContext ctx = classifyPlaceContext(types, priceLevel);
-
-	    int score;
-	    // 1️⃣ 컨텍스트별 베이스 점수
-	    switch (ctx) {
-	        case FAST_FOOD:
-	            score = 88; // 노브랜드, 맥날, 버거킹 등
-	            break;
-	        case CAFE:
-	            score = 82;
-	            break;
-	        case BAR_PUB:
-	            score = 72;
-	            break;
-	        case CASUAL_RESTAURANT:
-	            score = 60;
-	            break;
-	        case FINE_DINING:
-	            score = 18;
-	            break;
-	        default: // UNKNOWN
-	            score = 30;
-	    }
-	    
-	    System.out.println(ctx);
-	    System.out.println(priceLevel);
-
-	    // 2️⃣ 가격대 (싸면 혼밥 편함, 비쌀수록 부담)
-	    // 0: 모름, 1: 싸다, 2: 보통, 3: 비쌈, 4: 매우 비쌈
-	    if (priceLevel == 1) {
-	        score += 6;
-	    } else if (priceLevel == 3) {
-	        score -= 8;
-	    } else if (priceLevel >= 4) {
-	        score -= 12;
-	    }
-
-	    // 3️⃣ 리뷰 수 (붐비는 맛집/핫플 패널티)
-	    // 컨텍스트에 따라 다르게 적용
-	    if (reviewCount > 0) {
-	        if (ctx == PlaceContext.CASUAL_RESTAURANT || ctx == PlaceContext.FINE_DINING) {
-	            // 일반/고급 레스토랑은 붐비면 혼밥 부담 ↑
-	            if (reviewCount <= 30)       score += 5;   // 사람 적은 곳 → 오히려 혼밥 편함
-	            else if (reviewCount <= 100) /* 변화 없음 */ ;
-	            else if (reviewCount <= 300) score -= 6;
-	            else                         score -= 10;
-	        } else if (ctx == PlaceContext.FAST_FOOD || ctx == PlaceContext.CAFE) {
-	            // 패스트푸드/카페는 사람 좀 있어도 괜찮음
-	            if (reviewCount <= 10)       score -= 4;   // 너무 휑하면 오히려 어색
-	            else if (reviewCount >= 200) score += 2;   // 적당히 사람 많은 게 자연스러움
-	        }
-	    }
-
-	    // 4️⃣ 평점
-	    // 너무 높고(4.6↑) 리뷰 많으면 "핫플/맛집" 느낌 → 레스토랑 계열에서만살짝 깎음
-	    if (rating > 0) {
-	        if (rating <= 3.0) {
-	            score -= 6; // 이상한 가게일 수 있음
-	        } else if (rating >= 4.6 && reviewCount >= 200 &&
-	                (ctx == PlaceContext.CASUAL_RESTAURANT || ctx == PlaceContext.FINE_DINING)) {
-	            score -= 6;
-	        }
-	    }
-
-	    // 5️⃣ 영업 중 여부 (isOpenNow)
-	    // 지금 열려 있고, 레스토랑 + 리뷰 많으면 피크 타임일 확률 → 살짝 패널티
-	    if (isOpenNow && reviewCount >= 200 &&
-	            (ctx == PlaceContext.CASUAL_RESTAURANT || ctx == PlaceContext.FINE_DINING)) {
-	        score -= 3;
-	    }
-	    
-	    boolean isFastTurnoverRestaurant =
-	            types.contains("restaurant") &&
-	            reviewCount >= 200 &&
-	            rating >= 4.2 &&
-	            priceLevel <= 2;
-
-	    if (isFastTurnoverRestaurant) {
-	        score += 12;
-	    }
-	    
-	    if (ctx == PlaceContext.FINE_DINING) {
-	        score = Math.min(score, 25);
-	    }
-
-	    // 6️⃣ 보정: 0 ~ 100 사이로 클램핑
-	    score = Math.max(0, Math.min(100, score));
-
-	    return score;
-	}
-
-
-	// ✅ 태그 추출 (AI 없이)
-	private List<String> extractSoloTags(int reviewCount, int priceLevel, double rating, List<String> types) {
-
-	    List<String> tags = new java.util.ArrayList<>();
-
-	    // ✅ 키오스크
-	    if (types.contains("fast_food") || priceLevel == 1) {
-	        tags.add("키오스크 주문");
-	    }
-
-	    // ✅ 1인석
-	    if (types.contains("bar") || types.contains("cafe") || types.contains("fast_food")) {
-	        tags.add("1인석 존재");
-	    }
-
-	    // ✅ 빠른 주문
-	    if (types.contains("fast_food") || (reviewCount > 150 && priceLevel <= 2)) {
-	        tags.add("빠른 주문");
-	    }
-
-	    // ✅ 조용한 분위기
-	    if (types.contains("cafe") || (reviewCount < 80 && rating >= 4.3)) {
-	        tags.add("조용한 분위기");
-	    }
-
-	    // ✅ 혼자 방문 편함
-	    if (
-	        types.contains("fast_food") ||
-	        types.contains("bar") ||
-	        (reviewCount >= 50 && priceLevel <= 2)
-	    ) {
-	        tags.add("혼자 방문 편함");
-	    }
-
-	    return tags;
-	}
-	
-
-	private PlaceContext classifyPlaceContext(List<String> types, int priceLevel) {
-	    if (types == null) types = List.of();
-
-	    // 전부 소문자로 맞추기
-	    List<String> lower = types.stream()
-	            .map(String::toLowerCase)
-	            .collect(Collectors.toList());
-	    
-	    if (priceLevel<=0) {
-	        return PlaceContext.UNKNOWN;
-	    }
-	    
-	    // 패스트푸드 계열
-	    if (lower.contains("fast_food") || lower.contains("meal_takeaway")) {
-	        return PlaceContext.FAST_FOOD;
-	    }
-
-	    // 카페
-	    if (lower.contains("cafe")) {
-	        return PlaceContext.CAFE;
-	    }
-
-	    // 바/펍
-	    if (lower.contains("bar") || lower.contains("pub") || lower.contains("night_club")) {
-	        return PlaceContext.BAR_PUB;
-	    }
-
-	    // 파인다이닝 느낌 (비싼 restaurant)
-	    if (lower.contains("restaurant") && priceLevel >= 3) {
-	        return PlaceContext.FINE_DINING;
-	    }
-	    
-	    // 그냥 일반 식당
-	    if (lower.contains("restaurant")) {
-	        return PlaceContext.CASUAL_RESTAURANT;
-	    }
-	    
-	    
-
-	    return PlaceContext.UNKNOWN;
-	}
-
-
 }
