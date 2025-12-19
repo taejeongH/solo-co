@@ -1,4 +1,4 @@
-package com.ssafy.travel.ai.prompt;
+package com.ssafy.ai.prompt;
 
 import java.util.List;
 

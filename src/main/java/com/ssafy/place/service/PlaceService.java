@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
-import com.ssafy.place.ai.dto.SoloPlaceAnalysisDto;
+import com.ssafy.ai.dto.SoloPlaceAnalysisDto;
 import com.ssafy.place.dto.PersonalPlaceDetailDto;
 import com.ssafy.place.dto.PersonalPlaceDto;
 import com.ssafy.place.dto.PlaceDetailDto;
@@ -24,7 +24,7 @@ import com.ssafy.place.dto.PlaceDetailDto.ReviewDto;
 import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.dto.PlaceSearchItemDto;
 import com.ssafy.place.dto.PlaceSearchResponseDto;
-import com.ssafy.travel.ai.service.AIService;
+import com.ssafy.ai.service.AIService;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 

@@ -1,4 +1,4 @@
-package com.ssafy.travel.ai.config;
+package com.ssafy.ai.config;
 
 import java.io.IOException;
 

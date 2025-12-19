@@ -1,4 +1,4 @@
-package com.ssafy.travel.ai.service;
+package com.ssafy.ai.service;
 
 import java.util.List;
 import java.util.Set;
@@ -11,15 +11,15 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
-import com.ssafy.travel.ai.prompt.GroupTravelPromptBuilder;
-import com.ssafy.travel.ai.prompt.SoloTravelPromptBuilder;
+import com.ssafy.ai.prompt.GroupTravelPromptBuilder;
+import com.ssafy.ai.prompt.SoloTravelPromptBuilder;
 import com.ssafy.travel.itinerary.dto.GroupItineraryCandidateResponseDto;
 import com.ssafy.travel.itinerary.dto.ItineraryCandidateResponseDto;
 import org.springframework.cache.annotation.Cacheable;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.ssafy.place.ai.dto.SoloPlaceAnalysisDto;
-import com.ssafy.place.ai.prompt.PlaceAnalysisPromptBuilder;
+import com.ssafy.ai.dto.SoloPlaceAnalysisDto;
+import com.ssafy.ai.prompt.PlaceAnalysisPromptBuilder;
 import com.ssafy.travel.itinerary.dto.SoloItineraryCandidateResponseDto;
 import com.ssafy.travel.place.entity.TravelProjectPlace;
 
