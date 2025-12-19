@@ -44,11 +44,11 @@ public class JwtTokenProvider {
         Date now = new Date();
 
         return Jwts.builder()
-                .setSubject(username)
+                .subject(username)
                 .claim("userId", userId)
                 .claim("email", email)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessExpiration))
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + accessExpiration))
                 .signWith(secretKey)
                 .compact();
     }
@@ -57,9 +57,9 @@ public class JwtTokenProvider {
 		Date now = new Date();
 
 		return Jwts.builder()
-				.setSubject(username)
-				.setIssuedAt(now)
-				.setExpiration(new Date(now.getTime() + refreshExpiration))
+				.subject(username)
+				.issuedAt(now)
+				.expiration(new Date(now.getTime() + refreshExpiration))
 				.signWith(secretKey)
 				.compact();
 	}
