@@ -25,44 +25,35 @@ public class S3Service {
     private String bucketName;
 
     public String upload(MultipartFile file, String folder) throws IOException {
-
         String fileName = folder + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
-
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
                 .contentType(file.getContentType())
                 .build();
-
         s3Client.putObject(request,
                 RequestBody.fromBytes(file.getBytes()));
-
         return "https://" + bucketName + ".s3." +
                 "ap-northeast-2.amazonaws.com/" + fileName;
     }
     
     public String uploadFromUrl(String imageUrl, String folder) throws IOException {
-
         String fileName = folder + "/" + UUID.randomUUID() + ".jpg";
-
         URL url = new URL(imageUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
-
         try (InputStream inputStream = connection.getInputStream()) {
-
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
                     .contentType("image/jpeg")
                     .build();
-
+            
             s3Client.putObject(
                     request,
                     RequestBody.fromInputStream(inputStream, connection.getContentLengthLong())
             );
         }
-
         return "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + fileName;
     }
 
