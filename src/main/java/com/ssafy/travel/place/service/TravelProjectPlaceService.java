@@ -33,6 +33,7 @@ public class TravelProjectPlaceService {
     private final S3Service s3Service;
     private final TravelProjectMapper projectMapper;
     private final TravelProjectMemberMapper memberMapper;
+    private final TravelItineraryMapper travelItineraryMapper;
 
     private void checkPermission(Long projectId, Long userId) {
         // 1. 프로젝트 존재 여부 확인
@@ -140,7 +141,13 @@ public class TravelProjectPlaceService {
     public void deletePlace(Long projectId, Long placeId, Long userId) {
         // 0. 권한 확인
         checkPermission(projectId, userId);
+
+        // 1. 경로에 포함되어 있는지 확인
+        if (travelItineraryMapper.isPlaceInItinerary(placeId)) {
+            throw new CustomException(ErrorCode.PLACE_IN_USE);
+        }
         
+        // 2. 장소 삭제
         placeMapper.deletePlace(placeId, projectId);
     }
 

@@ -44,4 +44,8 @@
             pip.day, pip.order_no
     </select>
 
+    <select id="isPlaceInItinerary" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM project_itinerary_place WHERE place_id = #{placeId})
+    </select>
+
 </mapper>

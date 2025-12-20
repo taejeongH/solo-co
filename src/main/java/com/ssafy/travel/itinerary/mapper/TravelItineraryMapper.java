@@ -21,4 +21,6 @@ public interface TravelItineraryMapper {
     );
 
     List<ItineraryPlaceResponseDto> findPlacesByProjectId(@Param("projectId") Long projectId);
+    
+    boolean isPlaceInItinerary(@Param("placeId") Long placeId);
 }

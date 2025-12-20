@@ -37,6 +37,7 @@ public enum ErrorCode {
     USERNAME_ALREADY_EXISTS(409, "4090", "이미 존재하는 사용자명입니다."),
     VOTE_ALREADY_EXISTS(409, "4091", "이미 해당 투표에 참여했습니다."),
     PLACE_ALREADY_EXISTS(409, "4092", "이미 추가된 장소입니다."),
+    PLACE_IN_USE(409, "4093", "해당 장소는 여행 경로에 포함되어 있어 삭제할 수 없습니다."),
 
     // 500 Internal Server Error
     INTERNAL_ERROR(500, "5000", "서버 내부 오류가 발생했습니다.");
