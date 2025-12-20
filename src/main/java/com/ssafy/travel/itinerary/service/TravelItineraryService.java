@@ -47,6 +47,31 @@ public class TravelItineraryService {
     private final TravelProjectPlaceService projectPlaceService;
     private final TravelProjectPlaceMapper projectPlaceMapper;
 
+    @Transactional // Ensure atomicity of deletions
+    public void deleteItinerary(Long projectId, Long userId) {
+        // 0. 권한 체크
+        if (!projectMemberMapper.isMember(projectId, userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        // 1. 프로젝트 존재 여부 확인
+        TravelProject project = projectMapper.findById(projectId);
+        if (project == null) {
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+
+        // 2. 기존 경로 데이터 삭제
+        itineraryMapper.deleteByProjectId(projectId);
+        soloMapper.deleteByProjectId(projectId); // Delete solo metadata if exists
+        groupMapper.deleteByProjectId(projectId); // Delete group metadata if exists
+
+        // 3. 임시 장소(TEMP)도 모두 삭제
+        List<TravelProjectPlace> tempPlaces = projectPlaceMapper.findByProjectIdAndStatus(projectId, "TEMP");
+        for (TravelProjectPlace place : tempPlaces) {
+            projectPlaceMapper.deletePlace(place.getPlaceId(), projectId);
+        }
+    }
+
 
     @Transactional(readOnly = true)
     public ItineraryResponseDto getItinerary(long projectId, long userId) {

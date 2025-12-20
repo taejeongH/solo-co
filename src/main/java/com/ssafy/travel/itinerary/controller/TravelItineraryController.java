@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.ai.dto.AutoGenerateResponse;
@@ -29,6 +30,15 @@ public class TravelItineraryController {
 
     private final TravelItineraryService itineraryService;
     private final ChatClient chatClient;
+
+    @DeleteMapping("/{projectId}/itinerary")
+    @Operation(summary = "여행 경로 삭제", description = "생성된 여행 경로를 삭제합니다.", security = @SecurityRequirement(name = "JWT Auth"))
+    public ResponseEntity<String> deleteItinerary(
+            @PathVariable Long projectId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        itineraryService.deleteItinerary(projectId, userDetails.getUserId());
+        return ResponseEntity.ok("여행 경로 삭제 완료");
+    }
 
     @GetMapping("/{projectId}/itinerary")
     @Operation(summary = "여행 경로 조회", security = @SecurityRequirement(name = "JWT Auth"))
