@@ -11,11 +11,11 @@ public interface UserMapper {
     User findById(Long id);
 
     int updateUser(
-        Long userId,
-        String name,
-        String profileImage,
-        String password,
-        String email
+        @Param("userId") Long userId,
+        @Param("name") String name,
+        @Param("profileImage") String profileImage,
+        @Param("password") String password,
+        @Param("email") String email
     );
     
     void deleteUser(Long userId);

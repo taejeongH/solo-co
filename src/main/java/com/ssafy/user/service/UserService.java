@@ -31,13 +31,13 @@ public class UserService {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
-        String nickname = dto.getName() != null ? dto.getName() : user.getName();
-        String email = dto.getEmail() != null ? dto.getEmail() : user.getEmail();
+        String nickname = dto.getName();
+        String email = dto.getEmail();
         String imageUrl = null;
         if (file != null && !file.isEmpty()) {
             imageUrl = s3service.upload(file, "profile");
         }
-        String password = user.getPassword();
+        String password = null;
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             password = passwordEncoder.encode(dto.getPassword());
         }

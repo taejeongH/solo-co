@@ -15,11 +15,20 @@
     <!-- 회원 수정 -->
     <update id="updateUser">
         UPDATE users
-        SET 
-        	name = #{name},
-            profile_image = #{profileImage},
-            password = #{password},
-            email = #{email}
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="profileImage != null">
+                profile_image = #{profileImage},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+        </set>
         WHERE user_id = #{userId}
     </update>
     
