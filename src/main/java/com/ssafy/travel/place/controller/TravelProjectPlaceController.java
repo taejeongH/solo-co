@@ -36,7 +36,7 @@ public class TravelProjectPlaceController {
             @PathVariable String googlePlaceId,
             @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
 
-        placeService.addPlace(projectId, googlePlaceId, userDetails.getUserId(), null);
+        placeService.addPlace(projectId, googlePlaceId, userDetails.getUserId(), "CONFIRMED");
         return ResponseEntity.ok("장소 추가 완료");
     }
 
