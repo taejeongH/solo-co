@@ -44,6 +44,9 @@
                created_at as createdAt
         FROM project_place
         WHERE project_id = #{projectId}
+        <if test="statusFilter != null and statusFilter != ''">
+            AND status = #{statusFilter}
+        </if>
         <if test="sortBy != null">
             ORDER BY
             <choose>

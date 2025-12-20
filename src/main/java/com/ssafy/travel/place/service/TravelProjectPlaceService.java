@@ -158,7 +158,8 @@ public class TravelProjectPlaceService {
         Map<String, Object> params = Map.of(
                 "projectId", projectId,
                 "sortBy", sortBy,
-                "order", "desc".equalsIgnoreCase(order) ? "DESC" : "ASC"
+                "order", "desc".equalsIgnoreCase(order) ? "DESC" : "ASC",
+                "statusFilter", "CONFIRMED" // Only show CONFIRMED places
         );
 
         // 3. 장소 목록 조회
