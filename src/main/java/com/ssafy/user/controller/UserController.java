@@ -39,7 +39,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<UserResponseDto> updateUser(@AuthenticationPrincipal CustomUserDetails user,
             HttpServletRequest request,
-            @RequestPart("dto") UserUpdateRequestDto dto, @RequestPart("file") MultipartFile file) throws IOException {
+            @RequestPart("dto") UserUpdateRequestDto dto, @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
     	Long userId = user.getUserId();
 
         UserResponseDto response = userService.updateUser(userId, dto, file);
