@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -292,5 +293,65 @@ public class TravelItineraryService {
         LocalDate start = LocalDate.parse(project.getStartDate());
         LocalDate end = LocalDate.parse(project.getEndDate());
         return (int) ChronoUnit.DAYS.between(start, end) + 1;
+    }
+
+    @Transactional
+    public void updateItinerary(Long projectId, Long userId, ItineraryUpdateRequestDto updateRequest) throws IOException {
+        // Permission check
+        if (!projectMemberMapper.isMember(projectId, userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        TravelProject project = projectMapper.findById(projectId);
+        if (project == null) {
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+
+        List<ItineraryItemDto> resolvedPlaces = new ArrayList<>();
+        if (updateRequest.getPlaces() != null) {
+            for (ItineraryItemDto placeDto : updateRequest.getPlaces()) {
+                if (placeDto.getDay() == null || placeDto.getOrder() == null) {
+                    throw new CustomException(ErrorCode.INVALID_REQUEST, "Day and order are required for each place.");
+                }
+
+                Long placeId = placeDto.getPlaceId();
+
+                // If googlePlaceId is provided, it's a new or potentially existing place
+                if (placeDto.getGooglePlaceId() != null) {
+                    TravelProjectPlace existingPlace = projectPlaceMapper.findByGooglePlaceIdAndProjectId(placeDto.getGooglePlaceId(), projectId);
+                    if (existingPlace != null) {
+                        placeId = existingPlace.getPlaceId();
+                    } else {
+                        // Add the new place to the project
+                        TravelProjectPlace newPlace = projectPlaceService.addPlace(projectId, placeDto.getGooglePlaceId(), userId, "CONFIRMED");
+                        placeId = newPlace.getPlaceId();
+                    }
+                }
+
+                if (placeId == null) {
+                    throw new CustomException(ErrorCode.INVALID_REQUEST, "Each place must have a valid placeId or googlePlaceId.");
+                }
+
+                // Verify the final placeId belongs to the project
+                TravelProjectPlace finalPlace = projectPlaceMapper.findByPlaceIdAndProjectId(placeId, projectId);
+                if (finalPlace == null) {
+                    throw new CustomException(ErrorCode.PLACE_NOT_FOUND, "Place with ID " + placeId + " not found in this project.");
+                }
+
+                ItineraryItemDto resolvedPlace = new ItineraryItemDto();
+                resolvedPlace.setPlaceId(placeId);
+                resolvedPlace.setDay(placeDto.getDay());
+                resolvedPlace.setOrder(placeDto.getOrder());
+                resolvedPlaces.add(resolvedPlace);
+            }
+        }
+
+        // 1. Delete the existing itinerary
+        itineraryMapper.deleteByProjectId(projectId);
+
+        // 2. Insert the new itinerary
+        for (ItineraryItemDto resolvedPlace : resolvedPlaces) {
+            itineraryMapper.insertItineraryPlace(projectId, resolvedPlace.getDay(), resolvedPlace.getOrder(), resolvedPlace.getPlaceId());
+        }
     }
 }

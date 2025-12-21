@@ -14,7 +14,8 @@ public enum ErrorCode {
     PLACE_REQUIRED_FOR_AI(400, "4003", "AI 추천 기능을 사용하려면 최소 1개 이상의 장소가 필요합니다."),
     INVALID_ROUTE_SELECTION(400, "4004", "선택한 경로가 유효하지 않습니다."),
     INVALID_AI_RESULT(400, "4005", "AI 추천 결과가 유효하지 않습니다."),
-    
+    INVALID_ITINERARY_DAY(400, "4006", "여행 기간에 해당하지 않는 날짜입니다."),
+
     // 401 Unauthorized
     INVALID_LOGIN(401, "4010", "등록되지 않은 이메일 또는 비밀번호가 잘못 입력되었습니다."),
     EXPIRED_TOKEN(401, "4011", "만료된 토큰입니다."),
@@ -38,6 +39,7 @@ public enum ErrorCode {
     VOTE_ALREADY_EXISTS(409, "4091", "이미 해당 투표에 참여했습니다."),
     PLACE_ALREADY_EXISTS(409, "4092", "이미 추가된 장소입니다."),
     PLACE_IN_USE(409, "4093", "해당 장소는 여행 경로에 포함되어 있어 삭제할 수 없습니다."),
+    PLACE_ALREADY_IN_ITINERARY(409, "4094", "이미 여행 경로에 포함된 장소입니다."),
 
     // 500 Internal Server Error
     INTERNAL_ERROR(500, "5000", "서버 내부 오류가 발생했습니다.");

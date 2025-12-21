@@ -27,4 +27,7 @@ public interface TravelProjectPlaceMapper {
     List<TravelProjectPlace> findByProjectIdAndStatus(Long projectId, String status);
     void updateStatus(Long placeId, String status);
 
+    TravelProjectPlace findByPlaceIdAndProjectId(@Param("placeId") Long placeId, @Param("projectId") Long projectId);
+
+    TravelProjectPlace findByGooglePlaceIdAndProjectId(@Param("googlePlaceId") String googlePlaceId, @Param("projectId") Long projectId);
 }

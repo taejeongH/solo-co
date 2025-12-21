@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.ai.dto.AutoGenerateResponse;
 import com.ssafy.travel.itinerary.dto.ItineraryApplyRequestDto;
 import com.ssafy.travel.itinerary.dto.ItineraryResponseDto;
+import com.ssafy.travel.itinerary.dto.ItineraryUpdateRequestDto;
 import com.ssafy.travel.itinerary.service.TravelItineraryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,7 +56,7 @@ public class TravelItineraryController {
         AutoGenerateResponse response = itineraryService.autoGenerate(projectId, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
-    
+
     @PostMapping("/{projectId}/itinerary/ai-select")
     @Operation(summary = "여행 경로 선택", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> selectAIItinerary(
@@ -64,6 +66,16 @@ public class TravelItineraryController {
 
         itineraryService.applySelectedCandidate(userDetails.getUserId(), projectId, request);
         return ResponseEntity.ok("경로 저장 완료");
+    }
+
+    @PutMapping("/{projectId}/itinerary")
+    @Operation(summary = "경로 수정", description = "경로 전체를 수정합니다. 요청 바디에 포함된 장소 목록으로 경로가 대체됩니다.", security = @SecurityRequirement(name = "JWT Auth"))
+    public ResponseEntity<String> updateItinerary(
+            @PathVariable Long projectId,
+            @RequestBody ItineraryUpdateRequestDto updateRequest,
+            @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+        itineraryService.updateItinerary(projectId, userDetails.getUserId(), updateRequest);
+        return ResponseEntity.ok("경로 수정 완료");
     }
 
     @GetMapping("/test-ai")
