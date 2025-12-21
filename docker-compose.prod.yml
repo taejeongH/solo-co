@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  redis:
+      ports:
+          - "6379:6379"
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mydatabase.cxqkkukoc8ud.ap-northeast-2.rds.amazonaws.com:3306/soloco?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}

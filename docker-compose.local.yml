@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  redis:
+    ports:
+        - "16379:6379"
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/soloco?serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ssafy
+      SPRING_DATASOURCE_PASSWORD: ssafy
