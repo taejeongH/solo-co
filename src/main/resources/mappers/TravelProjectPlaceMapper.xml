@@ -113,4 +113,36 @@
     	WHERE place_id = #{placeId}
     </update>
 
+    <select id="findByPlaceIdAndProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
+        SELECT place_id as placeId,
+               project_id as projectId,
+               google_place_id as googlePlaceId,
+               place_name as placeName,
+               place_address as placeAddress,
+               latitude,
+               longitude,
+               thumbnail,
+               place_type as placeType,
+               status,
+               created_at as createdAt
+        FROM project_place
+        WHERE place_id = #{placeId} AND project_id = #{projectId}
+    </select>
+
+    <select id="findByGooglePlaceIdAndProjectId" resultType="com.ssafy.travel.place.entity.TravelProjectPlace">
+        SELECT place_id as placeId,
+               project_id as projectId,
+               google_place_id as googlePlaceId,
+               place_name as placeName,
+               place_address as placeAddress,
+               latitude,
+               longitude,
+               thumbnail,
+               place_type as placeType,
+               status,
+               created_at as createdAt
+        FROM project_place
+        WHERE google_place_id = #{googlePlaceId} AND project_id = #{projectId}
+    </select>
+
 </mapper>
