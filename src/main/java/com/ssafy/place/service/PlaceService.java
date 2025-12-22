@@ -453,4 +453,63 @@ public class PlaceService {
 				.queryParam("language", "ko").build(false)
 				.toUriString();
 	}
+
+	@Cacheable("solo-dining-recommendations")
+	public List<PersonalPlaceDto> recommendSoloDining(double latitude, double longitude, int radius) {
+		List<PlaceSearchItemDto> nearbyPlaces = searchNearbySoloDining(latitude, longitude, radius);
+
+		List<PersonalPlaceDto> detailedPlaces = nearbyPlaces.parallelStream()
+				.map(place -> {
+					try {
+						// -1 to indicate it's not for a specific project, just general details
+						return getPersonalPlaceBriefDetails(place.getPlaceId());
+					} catch (Exception e) {
+						// Log error or handle it as needed
+						System.err.println("Error fetching details for place " + place.getPlaceId() + ": " + e.getMessage());
+						return null;
+					}
+				})
+				.filter(place -> place != null)
+				.collect(Collectors.toList());
+
+		System.out.println("--- AI Analysis Results (Before Filtering) ---");
+		detailedPlaces.forEach(place -> {
+			System.out.println("Place: " + place.getName() + ", Solo Difficulty Score: " + place.getSoloDifficulty());
+		});
+		System.out.println("-------------------------------------------");
+
+		// Filter places based on solo-dining friendliness (e.g., soloDifficulty >= 65) and sort by score
+		return detailedPlaces.stream()
+				.filter(place -> place.getSoloDifficulty() >= 65)
+				.sorted(java.util.Comparator.comparing(PersonalPlaceDto::getSoloDifficulty).reversed())
+				.collect(Collectors.toList());
+	}
+
+	private List<PlaceSearchItemDto> searchNearbySoloDining(double latitude, double longitude, int radius) {
+		String location = latitude + "," + longitude;
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder
+				.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/nearbysearch/json")
+				.queryParam("location", location)
+				.queryParam("radius", radius)
+				.queryParam("type", "restaurant")
+				.queryParam("key", googlePlacesApiKey)
+				.queryParam("language", "ko");
+
+		String url = uriBuilder.build(false).toUriString();
+
+		try {
+			String response = restTemplate.getForObject(url, String.class);
+			JsonNode root = objectMapper.readTree(response);
+			String status = root.path("status").asText();
+
+			if (!"OK".equals(status) && !"ZERO_RESULTS".equals(status)) {
+				throw new CustomException(ErrorCode.INVALID_REQUEST,
+						"Google Places API error: " + status + " - " + root.path("error_message").asText());
+			}
+
+			return mapGooglePlaceResultsToDto(root.path("results"));
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INTERNAL_ERROR, "Error calling Google Places API: " + e.getMessage());
+		}
+	}
 }
