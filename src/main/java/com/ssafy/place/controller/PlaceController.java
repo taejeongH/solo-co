@@ -53,4 +53,14 @@ public class PlaceController {
     ) {
         return ResponseEntity.ok(placeService.getPlaceFullDetails(placeId, projectId));
     }
+
+    @GetMapping("/recommendations/solo-dining")
+    @Operation(summary = "혼밥하기 좋은 음식점 추천 (Google Places API)")
+    public ResponseEntity<?> recommendSoloDining(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(defaultValue = "5000") int radius
+    ) {
+        return ResponseEntity.ok(placeService.recommendSoloDining(latitude, longitude, radius));
+    }
 }
