@@ -119,6 +119,12 @@ public class TravelItineraryService {
 
     public AutoGenerateResponse autoGenerate(Long projectId, Long userId) throws IOException {
 
+        // 0. 기존 TEMP 상태의 장소들을 모두 삭제
+        List<TravelProjectPlace> tempPlacesToDelete = projectPlaceMapper.findByProjectIdAndStatus(projectId, "TEMP");
+        for (TravelProjectPlace place : tempPlacesToDelete) {
+            projectPlaceMapper.deletePlace(place.getPlaceId(), projectId);
+        }
+
         // 1. 프로젝트 조회
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
@@ -128,9 +134,6 @@ public class TravelItineraryService {
 
         // 3. 장소 조회
         List<TravelProjectPlace> places = placeMapper.findByProjectId(projectId);
-        if (places.isEmpty()) {
-            throw new CustomException(ErrorCode.PLACE_REQUIRED_FOR_AI);
-        }
 
         AutoGenerateResponse response = new AutoGenerateResponse();
         String aiResultId = java.util.UUID.randomUUID().toString();
@@ -162,9 +165,14 @@ public class TravelItineraryService {
     //ai 추천 경로에서 적용되지 않은 속성들 적용
     @Transactional
     public void enrichPlacesFromDbAndHandleNewPlaces(List<? extends ItineraryCandidateResponseDto> candidates,Long projectId, Long userId) throws IOException {
+        // Map to track newly created places within this transaction to avoid duplicates
+        java.util.Map<String, TravelProjectPlace> newlyCreatedPlaces = new java.util.HashMap<>();
+
         for (var candidate : candidates) {
             for (var day : candidate.getDays()) {
-                for (var place : day.getPlaces()) {
+                // Use an iterator to safely remove items
+                for (java.util.Iterator<ItineraryPlaceDto> iterator = day.getPlaces().iterator(); iterator.hasNext();) {
+                    ItineraryPlaceDto place = iterator.next();
                     // 기존 장소
                     if (!place.isNewPlace()) {
                         TravelProjectPlace dbPlace = placeMapper.findByPlaceId(place.getPlaceId());
@@ -175,7 +183,24 @@ public class TravelItineraryService {
                     }
                     // 신규 장소
                     else {
-                        TravelProjectPlace tempPlace = createTempPlaceFromGoogle(place.getPlaceName(), projectId, userId);
+                        TravelProjectPlace tempPlace = newlyCreatedPlaces.get(place.getPlaceName());
+
+                        if (tempPlace == null) { // Not created yet in this session
+                            try {
+                                tempPlace = createTempPlaceFromGoogle(place.getPlaceName(), projectId, userId);
+                                newlyCreatedPlaces.put(place.getPlaceName(), tempPlace); // Track it
+                            } catch (CustomException e) {
+                                if (e.getErrorCode() == ErrorCode.PLACE_NOT_FOUND) {
+                                    // AI가 추천한 장소를 찾을 수 없으면, 목록에서 제거
+                                    System.out.println("Skipping unsearchable place suggested by AI: " + place.getPlaceName());
+                                    iterator.remove();
+                                    continue; // Skip to the next place
+                                } else {
+                                    // 다른 예외는 다시 던짐
+                                    throw e;
+                                }
+                            }
+                        }
                         applyDbPlace(place, tempPlace);
                     }
                 }
@@ -197,7 +222,9 @@ public class TravelItineraryService {
     //새로 추가된 장소를 db에 임시 저장
     private TravelProjectPlace createTempPlaceFromGoogle(String placeName, Long projectId, Long userId) throws IOException {
         List<PlaceSearchItemDto> places = googlePlaceService.searchPlaces(placeName, null, null, null).getPlaces();
-//    	throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+        if (places.isEmpty()) {
+            throw new CustomException(ErrorCode.PLACE_NOT_FOUND, "Google 지도에서 '" + placeName + "'에 대한 검색 결과를 찾을 수 없습니다.");
+        }
         String googlePlaceId = places.get(0).getPlaceId();
         TravelProjectPlace place = projectPlaceService.addPlace(projectId, googlePlaceId, userId, "TEMP");
         return place;
