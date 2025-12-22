@@ -25,7 +25,7 @@ public class TravelProjectInviteService {
     private final TravelProjectInviteMapper inviteMapper;
     private final TravelProjectMapper projectMapper;
 
-    @Value("${app.frontend.url:http://localhost:5173}")
+    @Value("${app.frontend.url:https://solo-co.netlify.app}")
     private String frontendBaseUrl;
 
     @Transactional
