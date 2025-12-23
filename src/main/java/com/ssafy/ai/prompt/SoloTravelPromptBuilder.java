@@ -5,11 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.ssafy.travel.place.entity.TravelProjectPlace;
+import com.ssafy.tour.dto.TourApiResponseDto;
+
 
 @Component
 public class SoloTravelPromptBuilder {
 
-    public String build(List<TravelProjectPlace> places, int tripDays) {
+    public String build(List<TravelProjectPlace> places, int tripDays, List<TourApiResponseDto.Item> newPlaces) {
 
         StringBuilder list = new StringBuilder();
         for (TravelProjectPlace p : places) {
@@ -22,11 +24,34 @@ public class SoloTravelPromptBuilder {
             ));
         }
 
+        StringBuilder newPlacesList = new StringBuilder();
+        if (newPlaces != null && !newPlaces.isEmpty()) {
+            newPlacesList.append("""
+            
+            ---------------------------------------------------------
+            추가 추천 장소 (한국관광공사 제공)
+            ---------------------------------------------------------
+            아래 목록은 사용자의 여행지에 맞춰 추천하는 새로운 관광 명소들이다.
+            일정이 비어 보인다면, 이 장소들을 자연스럽게 코스에 포함시키는 것을 적극적으로 고려하라.
+            """);
+            for (TourApiResponseDto.Item item : newPlaces) {
+                newPlacesList.append(String.format(
+                    "- placeName: %s, address: %s, latitude: %f, longitude: %f%n",
+                    item.getTitle(),
+                    item.getAddress(),
+                    item.getLatitude(),
+                    item.getLongitude()
+                ));
+            }
+        }
+
+
         return """
         사용자가 혼자 여행할 예정이며, 방문할 장소 목록(위도, 경도 포함)과 여행 기간은 다음과 같다:
         - 방문 장소:
         %s
         - 여행 기간: 총 %d일
+        %s
 
         너의 임무는 이 정보를 바탕으로 총 4개의 여행 코스 제안을 생성하는 것이다.
 
@@ -92,7 +117,7 @@ public class SoloTravelPromptBuilder {
                 -   `safety`, `transportAccessibility`, `routeSimplicity`, `landmarkAccessibility`, `soloDiningDifficulty` 각각의 점수를 어떻게 산출했는지에 대한 구체적인 이유를 한 문장으로 작성해야 한다.
                 -   `scoreJustification` 필드에 각 점수 항목의 이름(`safety` 등)을 key로, 해당 이유를 value로 하는 Map 형태로 채워야 한다.
         ---------------------------------------------------------
-        """.formatted(list, tripDays, tripDays);
+        """.formatted(list, tripDays, newPlacesList, tripDays);
     }
 
 }

@@ -2,6 +2,7 @@ package com.ssafy.ai.prompt;
 
 import java.util.List;
 
+import com.ssafy.tour.dto.TourApiResponseDto;
 import org.springframework.stereotype.Component;
 
 import com.ssafy.travel.place.entity.TravelProjectPlace;
@@ -9,7 +10,7 @@ import com.ssafy.travel.place.entity.TravelProjectPlace;
 @Component
 public class GroupTravelPromptBuilder {
 
-    public String build(List<TravelProjectPlace> places, int tripDays) {
+    public String build(List<TravelProjectPlace> places, int tripDays, List<TourApiResponseDto.Item> newPlaces) {
 
         StringBuilder list = new StringBuilder();
         for (TravelProjectPlace p : places) {
@@ -22,6 +23,27 @@ public class GroupTravelPromptBuilder {
             ));
         }
 
+        StringBuilder newPlacesList = new StringBuilder();
+        if (newPlaces != null && !newPlaces.isEmpty()) {
+            newPlacesList.append("""
+            
+            ---------------------------------------------------------
+            추가 추천 장소 (한국관광공사 제공)
+            ---------------------------------------------------------
+            아래 목록은 사용자의 여행지에 맞춰 추천하는 새로운 관광 명소들이다.
+            일정이 비어 보인다면, 이 장소들을 자연스럽게 코스에 포함시키는 것을 적극적으로 고려하라.
+            """);
+            for (TourApiResponseDto.Item item : newPlaces) {
+                newPlacesList.append(String.format(
+                    "- placeName: %s, address: %s, latitude: %f, longitude: %f%n",
+                    item.getTitle(),
+                    item.getAddress(),
+                    item.getLatitude(),
+                    item.getLongitude()
+                ));
+            }
+        }
+
         return """
         당신은 전문 여행 플래너입니다. 사용자가 제공한 장소 목록과 여행 기간을 바탕으로 최적화된 여행 코스 4개를 제안하는 것이 당신의 임무입니다.
 
@@ -29,6 +51,7 @@ public class GroupTravelPromptBuilder {
         - 방문 희망 장소:
         %s
         - 여행 기간: 총 %d일
+        %s
 
         ---------------------------------------------------------
         IMPORTANT RULES (반드시 지켜야 할 핵심 규칙)
@@ -59,7 +82,7 @@ public class GroupTravelPromptBuilder {
             -   `summary` 필드는 각 코스의 특징을 1~2문장으로 요약하여 반드시 작성해야 합니다.
             -   `routeType` 필드는 각 코스에 1, 2, 3, 4를 순서대로 할당해야 합니다.
         ---------------------------------------------------------
-        """.formatted(list, tripDays, tripDays, tripDays);
+        """.formatted(list, tripDays, newPlacesList, tripDays, tripDays);
     }
 
 
