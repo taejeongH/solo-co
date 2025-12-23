@@ -20,4 +20,7 @@ public class PersonalPlaceDto {
 
     private List<String> types;
     private List<String> photoUrls;
+    
+    private double lat;
+    private double lng;
 }

@@ -131,7 +131,7 @@ public class PlaceService {
 	}
 
     private PersonalPlaceDto getPersonalPlaceBriefDetails(String placeId) {
-        String fields = "place_id,name,formatted_address,rating,user_ratings_total,price_level,types,opening_hours,photos";
+        String fields = "place_id,name,formatted_address,rating,user_ratings_total,price_level,types,opening_hours,photos,geometry";
 
         String url = UriComponentsBuilder
                 .fromUriString(GOOGLE_PLACES_API_BASE_URL + "/details/json")
@@ -168,6 +168,15 @@ public class PlaceService {
 			
             SoloPlaceAnalysisDto analysis = aiService.analyzePlaceForSoloTravel(result);
 
+            JsonNode geometryNode = result.path("geometry");
+            JsonNode locationNode = geometryNode.path("location");
+            double lat = 0.0;
+            double lng = 0.0;
+            if (!locationNode.isMissingNode()) {
+                lat = locationNode.path("lat").asDouble();
+                lng = locationNode.path("lng").asDouble();
+            }
+
             return PersonalPlaceDto.builder()
                     .placeId(result.path("place_id").asText())
                     .name(result.path("name").asText())
@@ -178,6 +187,8 @@ public class PlaceService {
                     .tags(analysis.getTags())
                     .types(types)
                     .photoUrls(photoUrls)
+                    .lat(lat)
+                    .lng(lng)
                     .build();
 
         } catch (Exception e) {
@@ -229,7 +240,6 @@ public class PlaceService {
 				);
 			}
 
-			// Map geometry (location)
 			JsonNode geometryNode = result.path("geometry");
 			JsonNode locationNode = geometryNode.path("location");
 			Map<String, Object> geometryMap = null;
@@ -244,7 +254,7 @@ public class PlaceService {
 					.formattedAddress(result.path("formatted_address").asText())
 					.formattedPhoneNumber(result.path("formatted_phone_number").asText(null))
 					.types(types)
-					.photoUrls(photoUrls) // Use the list of URLs
+					.photoUrls(photoUrls)
 					.geometry(geometryMap)
 					.build();
 
@@ -480,13 +490,6 @@ public class PlaceService {
 				.filter(place -> place != null)
 				.collect(Collectors.toList());
 
-		System.out.println("--- AI Analysis Results (Before Filtering) ---");
-		detailedPlaces.forEach(place -> {
-			System.out.println("Place: " + place.getName() + ", Solo Difficulty Score: " + place.getSoloDifficulty());
-		});
-		System.out.println("-------------------------------------------");
-
-		// Filter places based on solo-dining friendliness (e.g., soloDifficulty >= 65) and sort by score
 		return detailedPlaces.stream()
 				.filter(place -> place.getSoloDifficulty() >= 65)
 				.sorted(java.util.Comparator.comparing(PersonalPlaceDto::getSoloDifficulty).reversed())
