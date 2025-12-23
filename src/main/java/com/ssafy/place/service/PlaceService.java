@@ -118,7 +118,7 @@ public class PlaceService {
 
 	}
 
-    @Cacheable("places")
+    @Cacheable(value = "places", key = "#placeId + '-' + #projectId + '-brief'")
 	public Object getPlaceBriefDetails(String placeId, Long projectId) {
     	if (projectId==-1) return getGroupPlaceBriefDetails(placeId);
 		TravelProject project = travelProjectMapper.findById(projectId);
@@ -299,7 +299,7 @@ public class PlaceService {
 		}
 	}
 
-	@Cacheable("places")
+	@Cacheable(value = "places", key = "#placeId + '-' + #projectId + '-full'")
 	public Object getPlaceFullDetails(String placeId, Long projectId) {
 		TravelProject project = travelProjectMapper.findById(projectId);
 		if (project == null) {
