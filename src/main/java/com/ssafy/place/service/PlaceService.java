@@ -17,6 +17,7 @@ import com.ssafy.ai.dto.SoloPlaceAnalysisDto;
 import com.ssafy.ai.service.AIService;
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
+import com.ssafy.global.service.S3Service;
 import com.ssafy.global.util.PlaceTypeConverter;
 import com.ssafy.place.dto.PersonalPlaceDetailDto;
 import com.ssafy.place.dto.PersonalPlaceDto;
@@ -26,6 +27,7 @@ import com.ssafy.place.dto.PlaceDetailDto.ReviewDto;
 import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.dto.PlaceSearchItemDto;
 import com.ssafy.place.dto.PlaceSearchResponseDto;
+import com.ssafy.redis.service.PhotoCacheService;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 
@@ -43,6 +45,9 @@ public class PlaceService {
 	private final ObjectMapper objectMapper;
 	private final TravelProjectMapper travelProjectMapper;
 	private final AIService aiService;
+	private final S3Service s3Service;
+	private final PhotoCacheService photoCacheService;
+
 
 	@Cacheable("places")
 	public PlaceSearchResponseDto searchPlaces(String query, String location, String type, String nextPageToken) {
@@ -160,9 +165,24 @@ public class PlaceService {
             List<String> photoUrls = Collections.emptyList();
 			if (result.has("photos") && result.path("photos").isArray()) {
 				photoUrls = new java.util.ArrayList<>();
+				String googlePlaceId = result.path("place_id").asText();
 				for (JsonNode photoNode : result.path("photos")) {
 					String photoReference = photoNode.path("photo_reference").asText();
-					photoUrls.add(getGooglePhotoUrl(photoReference, 1000)); // Max width for full details
+
+					String cachedUrl = photoCacheService.getS3Url(googlePlaceId, photoReference);
+					if (cachedUrl != null) {
+						photoUrls.add(cachedUrl);
+					} else {
+						String googlePhotoUrl = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
+							.queryParam("maxwidth", 1000)
+							.queryParam("photoreference", photoReference)
+							.queryParam("key", googlePlacesApiKey)
+							.build(false)
+							.toUriString();
+						String s3Url = s3Service.uploadGooglePlacePhoto(googlePlaceId, photoReference, googlePhotoUrl, "place-photos");
+						photoCacheService.cacheS3Url(googlePlaceId, photoReference, s3Url);
+						photoUrls.add(s3Url);
+					}
 				}
 			}
 			
@@ -226,9 +246,24 @@ public class PlaceService {
 			List<String> photoUrls = Collections.emptyList();
 			if (result.has("photos") && result.path("photos").isArray()) {
 				photoUrls = new java.util.ArrayList<>();
+				String googlePlaceId = result.path("place_id").asText();
 				for (JsonNode photoNode : result.path("photos")) {
 					String photoReference = photoNode.path("photo_reference").asText();
-					photoUrls.add(getGooglePhotoUrl(photoReference, 400)); // Max width for brief display
+					
+					String cachedUrl = photoCacheService.getS3Url(googlePlaceId, photoReference);
+					if (cachedUrl != null) {
+						photoUrls.add(cachedUrl);
+					} else {
+						String googlePhotoUrl = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
+							.queryParam("maxwidth", 400)
+							.queryParam("photoreference", photoReference)
+							.queryParam("key", googlePlacesApiKey)
+							.build(false)
+							.toUriString();
+						String s3Url = s3Service.uploadGooglePlacePhoto(googlePlaceId, photoReference, googlePhotoUrl, "place-photos");
+						photoCacheService.cacheS3Url(googlePlaceId, photoReference, s3Url);
+						photoUrls.add(s3Url);
+					}
 				}
 			}
 			
@@ -317,9 +352,24 @@ public class PlaceService {
 	        List<String> photoUrls = Collections.emptyList();
 			if (result.has("photos") && result.path("photos").isArray()) {
 				photoUrls = new java.util.ArrayList<>();
+				String googlePlaceId = result.path("place_id").asText();
 				for (JsonNode photoNode : result.path("photos")) {
 					String photoReference = photoNode.path("photo_reference").asText();
-					photoUrls.add(getGooglePhotoUrl(photoReference, 1000)); // Max width for full details
+					
+					String cachedUrl = photoCacheService.getS3Url(googlePlaceId, photoReference);
+					if (cachedUrl != null) {
+						photoUrls.add(cachedUrl);
+					} else {
+						String googlePhotoUrl = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
+							.queryParam("maxwidth", 1000)
+							.queryParam("photoreference", photoReference)
+							.queryParam("key", googlePlacesApiKey)
+							.build(false)
+							.toUriString();
+						String s3Url = s3Service.uploadGooglePlacePhoto(googlePlaceId, photoReference, googlePhotoUrl, "place-photos");
+						photoCacheService.cacheS3Url(googlePlaceId, photoReference, s3Url);
+						photoUrls.add(s3Url);
+					}
 				}
 			}
 			
@@ -397,9 +447,24 @@ public class PlaceService {
 			List<String> photoUrls = Collections.emptyList();
 			if (result.has("photos") && result.path("photos").isArray()) {
 				photoUrls = new java.util.ArrayList<>();
+				String googlePlaceId = result.path("place_id").asText();
 				for (JsonNode photoNode : result.path("photos")) {
 					String photoReference = photoNode.path("photo_reference").asText();
-					photoUrls.add(getGooglePhotoUrl(photoReference, 1000)); // Max width for full details
+					
+					String cachedUrl = photoCacheService.getS3Url(googlePlaceId, photoReference);
+					if (cachedUrl != null) {
+						photoUrls.add(cachedUrl);
+					} else {
+						String googlePhotoUrl = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
+							.queryParam("maxwidth", 1000)
+							.queryParam("photoreference", photoReference)
+							.queryParam("key", googlePlacesApiKey)
+							.build(false)
+							.toUriString();
+						String s3Url = s3Service.uploadGooglePlacePhoto(googlePlaceId, photoReference, googlePhotoUrl, "place-photos");
+						photoCacheService.cacheS3Url(googlePlaceId, photoReference, s3Url);
+						photoUrls.add(s3Url);
+					}
 				}
 			}
 
@@ -458,18 +523,6 @@ public class PlaceService {
 			throw new CustomException(ErrorCode.INTERNAL_ERROR,
 					"Error calling Google Places API for full details: " + e.getMessage());
 		}
-	}
-
-	private String getGooglePhotoUrl(String photoReference, int maxWidth) {
-		if (photoReference == null || photoReference.isEmpty()) {
-			return null;
-		}
-		return UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
-				.queryParam("maxwidth", maxWidth)
-				.queryParam("photoreference", photoReference)
-				.queryParam("key", googlePlacesApiKey)
-				.queryParam("language", "ko").build(false)
-				.toUriString();
 	}
 
 	@Cacheable("solo-dining-recommendations")
