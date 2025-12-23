@@ -13,9 +13,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.ai.dto.SoloPlaceAnalysisDto;
+import com.ssafy.ai.service.AIService;
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
-import com.ssafy.ai.dto.SoloPlaceAnalysisDto;
+import com.ssafy.global.util.PlaceTypeConverter;
 import com.ssafy.place.dto.PersonalPlaceDetailDto;
 import com.ssafy.place.dto.PersonalPlaceDto;
 import com.ssafy.place.dto.PlaceDetailDto;
@@ -24,7 +26,6 @@ import com.ssafy.place.dto.PlaceDetailDto.ReviewDto;
 import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.dto.PlaceSearchItemDto;
 import com.ssafy.place.dto.PlaceSearchResponseDto;
-import com.ssafy.ai.service.AIService;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 
@@ -94,10 +95,17 @@ public class PlaceService {
 
 		List<PlaceSearchItemDto> placeSearchItemDtos = new java.util.ArrayList<>();
 		for (JsonNode result : results) {
+			List<String> types = objectMapper.convertValue(
+                    result.path("types"),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class)
+            );
 			placeSearchItemDtos.add(PlaceSearchItemDto.builder()
 					.placeId(result.path("place_id").asText())
 					.name(result.path("name").asText())
 					.formattedAddress(result.path("formatted_address").asText())
+					.tag(PlaceTypeConverter.translatePlaceTypeToKorean(types))
+					.lat(result.path("geometry").path("location").path("lat").asDouble())
+					.lng(result.path("geometry").path("location").path("lng").asDouble())
 					.build());
 		}
 

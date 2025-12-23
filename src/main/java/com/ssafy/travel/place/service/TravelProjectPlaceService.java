@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
+import com.ssafy.global.util.PlaceTypeConverter;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
@@ -69,7 +70,7 @@ public class TravelProjectPlaceService {
         if(status!=null) place.setStatus(status);
 
         if (placeDetails.getTypes() != null && !placeDetails.getTypes().isEmpty()) {
-            place.setPlaceType(translatePlaceTypeToKorean(placeDetails.getTypes()));
+            place.setPlaceType(PlaceTypeConverter.translatePlaceTypeToKorean(placeDetails.getTypes()));
         }
         
         if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
@@ -88,55 +89,6 @@ public class TravelProjectPlaceService {
         
         return place;
     }
-
-    private String translatePlaceTypeToKorean(List<String> types) {
-        // 우선순위를 정의합니다. (더 구체적인 유형이 먼저 오도록)
-        List<String> priorityOrder = List.of(
-            "restaurant", "cafe", "lodging", "bank", "atm", "store",
-            "bakery", "convenience_store", "pharmacy", "hospital",
-            "movie_theater", "museum", "art_gallery", "library",
-            "tourist_attraction", "park", "subway_station", "bus_station", "airport",
-            "department_store", "shopping_mall", "bar",
-            "point_of_interest", "establishment" // 덜 구체적인 유형은 뒤로
-        );
-
-        Map<String, String> typeMap = Map.ofEntries(
-            Map.entry("restaurant", "음식점"),
-            Map.entry("cafe", "카페"),
-            Map.entry("bar", "바"),
-            Map.entry("lodging", "숙소"),
-            Map.entry("bank", "은행"),
-            Map.entry("atm", "ATM"),
-            Map.entry("store", "상점"),
-            Map.entry("tourist_attraction", "관광 명소"),
-            Map.entry("park", "공원"),
-            Map.entry("subway_station", "지하철역"),
-            Map.entry("bus_station", "버스 정류장"),
-            Map.entry("airport", "공항"),
-            Map.entry("department_store", "백화점"),
-            Map.entry("shopping_mall", "쇼핑몰"),
-            Map.entry("bakery", "베이커리"),
-            Map.entry("convenience_store", "편의점"),
-            Map.entry("pharmacy", "약국"),
-            Map.entry("hospital", "병원"),
-            Map.entry("movie_theater", "영화관"),
-            Map.entry("museum", "박물관"),
-            Map.entry("art_gallery", "미술관"),
-            Map.entry("library", "도서관"),
-            Map.entry("point_of_interest", "관심 장소"),
-            Map.entry("establishment", "시설")
-        );
-
-        for (String type : priorityOrder) {
-            if (types.contains(type) && typeMap.containsKey(type)) {
-                return typeMap.get(type);
-            }
-        }
-
-        // 우선순위 목록에 없거나 매핑되지 않은 경우, 기본값 또는 '기타' 반환
-        return "기타";
-    }
-
 
     public void deletePlace(Long projectId, Long placeId, Long userId) {
         // 0. 권한 확인
