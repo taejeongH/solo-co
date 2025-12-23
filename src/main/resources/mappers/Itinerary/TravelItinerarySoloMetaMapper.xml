@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ssafy.travel.itinerary.mapper.TravelItinerarySoloMetaMapper">
 
+    <resultMap id="soloMetaResultMap" type="com.ssafy.travel.itinerary.dto.SoloItineraryMetaResponseDto">
+        <result property="totalScore" column="total_score"/>
+        <result property="safety" column="safety"/>
+        <result property="transportAccessibility" column="transport_accessibility"/>
+        <result property="routeSimplicity" column="route_simplicity"/>
+        <result property="landmarkAccessibility" column="landmark_accessibility"/>
+        <result property="soloDiningDifficulty" column="solo_dining_difficulty"/>
+        <result property="summary" column="summary"/>
+        <result property="recommendation" column="recommendation"/>
+        <result property="scoreJustification" column="score_justification" javaType="java.util.Map" typeHandler="com.ssafy.global.util.mybatis.JsonTypeHandler"/>
+    </resultMap>
+
 	<delete id="deleteByProjectId">
         DELETE FROM project_itinerary_solo_meta
         WHERE project_id = #{projectId}
@@ -17,7 +29,8 @@
             landmark_accessibility,
             solo_dining_difficulty,
             summary,
-            recommendation
+            recommendation,
+            score_justification
         ) VALUES (
             #{projectId},
             #{solo.soloScore.totalScore},
@@ -27,19 +40,22 @@
             #{solo.soloScore.landmarkAccessibility},
             #{solo.soloScore.soloDiningDifficulty},
             #{solo.summary},
-            #{solo.recommendation}
+            #{solo.recommendation},
+            #{solo.soloScore.scoreJustification, typeHandler=com.ssafy.global.util.mybatis.JsonTypeHandler}
         )
     </insert>
 
-    <select id="findMetaByProjectId" resultType="com.ssafy.travel.itinerary.dto.SoloItineraryMetaResponseDto">
+    <select id="findMetaByProjectId" resultMap="soloMetaResultMap">
         SELECT
-            total_score AS totalScore,
+            total_score,
             safety,
-            transport_accessibility AS transportAccessibility,
-            route_simplicity AS routeSimplicity,
-            landmark_accessibility AS landmarkAccessibility,
-            solo_dining_difficulty AS soloDiningDifficulty,
-            summary
+            transport_accessibility,
+            route_simplicity,
+            landmark_accessibility,
+            solo_dining_difficulty,
+            summary,
+            recommendation,
+            score_justification
         FROM
             project_itinerary_solo_meta
         WHERE
