@@ -193,6 +193,91 @@ public class PlaceService {
 									}
 								}).filter(java.util.Objects::nonNull).collect(Collectors.toList());			}
 			
+            JsonNode geometryNode = result.path("geometry");
+            JsonNode locationNode = geometryNode.path("location");
+            double lat = 0.0;
+            double lng = 0.0;
+            if (!locationNode.isMissingNode()) {
+                lat = locationNode.path("lat").asDouble();
+                lng = locationNode.path("lng").asDouble();
+            }
+
+            return PersonalPlaceDto.builder()
+                    .placeId(result.path("place_id").asText())
+                    .name(result.path("name").asText())
+                    .formattedAddress(result.path("formatted_address").asText())
+                    .rating(result.path("rating").asDouble(0.0))
+                    .types(types)
+                    .photoUrls(photoUrls)
+                    .lat(lat)
+                    .lng(lng)
+                    .build();
+
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "Personal place brief error: " + e.getMessage());
+        }
+    }
+
+
+    private PersonalPlaceDto getPersonalPlaceBriefDetailsWithAI(String placeId) {
+        String fields = "place_id,name,formatted_address,rating,user_ratings_total,price_level,types,opening_hours,photos,geometry";
+
+        String url = UriComponentsBuilder
+                .fromUriString(GOOGLE_PLACES_API_BASE_URL + "/details/json")
+                .queryParam("place_id", placeId)
+                .queryParam("fields", fields)
+                .queryParam("key", googlePlacesApiKey)
+                .queryParam("language", "ko")
+                .build(false)
+                .toUriString();
+
+        try {
+            String response = restTemplate.getForObject(url, String.class);
+            JsonNode root = objectMapper.readTree(response);
+
+            if (!"OK".equals(root.path("status").asText())) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API error");
+            }
+
+            JsonNode result = root.path("result");
+
+            List<String> types = objectMapper.convertValue(
+                    result.path("types"),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, String.class)
+            );
+
+            List<String> photoUrls = Collections.emptyList();
+			if (result.has("photos") && result.path("photos").isArray()) {
+				String googlePlaceId = result.path("place_id").asText();
+
+				List<JsonNode> photoNodes = new java.util.ArrayList<>();
+                result.path("photos").forEach(photoNodes::add);
+
+				photoUrls = photoNodes.parallelStream().map(photoNode -> {
+					try {
+						String photoReference = photoNode.path("photo_reference").asText();
+
+						String cachedUrl = photoCacheService.getS3Url(googlePlaceId, photoReference);
+						if (cachedUrl != null) {
+							return cachedUrl;
+						} else {
+							String googlePhotoUrl = UriComponentsBuilder.fromUriString(GOOGLE_PLACES_API_BASE_URL + "/photo")
+								.queryParam("maxwidth", 1000)
+								.queryParam("photoreference", photoReference)
+								.queryParam("key", googlePlacesApiKey)
+								.build(false)
+								.toUriString();
+							String s3Url = s3Service.uploadGooglePlacePhoto(googlePlaceId, photoReference, googlePhotoUrl, "place-photos");
+							photoCacheService.cacheS3Url(googlePlaceId, photoReference, s3Url);
+							return s3Url;
+						}
+					} catch (Exception e) {
+						System.err.println("Error processing photo: " + e.getMessage());
+						return null;
+					}
+				}).filter(java.util.Objects::nonNull).collect(Collectors.toList());
+			}
+			
             SoloPlaceAnalysisDto analysis = aiService.analyzePlaceForSoloTravel(result);
 
             JsonNode geometryNode = result.path("geometry");
@@ -222,7 +307,6 @@ public class PlaceService {
             throw new CustomException(ErrorCode.INTERNAL_ERROR, "Personal place brief error: " + e.getMessage());
         }
     }
-
 
 	private PlaceDto getGroupPlaceBriefDetails(String placeId) {
 		String fields = "place_id,name,formatted_address,formatted_phone_number,type,photos,geometry"; // Request 'photos' and 'geometry' fields
@@ -360,8 +444,6 @@ public class PlaceService {
 	        int reviewCount = result.path("user_ratings_total").asInt(0);
 	        double rating = result.path("rating").asDouble(0.0);
 
-	        SoloPlaceAnalysisDto analysis = aiService.analyzePlaceForSoloTravel(result);
-	        
 	        List<String> photoUrls = Collections.emptyList();
 			if (result.has("photos") && result.path("photos").isArray()) {
 				String googlePlaceId = result.path("place_id").asText();
@@ -421,9 +503,6 @@ public class PlaceService {
 	                .userRatingsTotal(reviewCount)
 	                .photoUrls(photoUrls)
 	                .types(types)
-	                .soloScore(analysis.getSoloDifficultyScore())
-	                .scoreJustification(analysis.getScoreJustification())
-	                .tags(analysis.getTags())
 	                .businessStatus(result.path("business_status").asText(null))
 	                .geometry(geometryMap)
 	                .website(result.path("website").asText(null)).url(result.path("url").asText(null))
@@ -561,7 +640,7 @@ public class PlaceService {
 				.map(place -> {
 					try {
 						// -1 to indicate it's not for a specific project, just general details
-						return getPersonalPlaceBriefDetails(place.getPlaceId());
+						return getPersonalPlaceBriefDetailsWithAI(place.getPlaceId());
 					} catch (Exception e) {
 						// Log error or handle it as needed
 						System.err.println("Error fetching details for place " + place.getPlaceId() + ": " + e.getMessage());
