@@ -192,6 +192,11 @@ public class TravelProjectService {
     public TravelProjectDetailResponseDto getProjectDetail(Long userId, Long projectId) {
         validate(userId, projectId);
         List<TravelProjectMemberResponseDto> members = projectMemberMapper.findMembers(projectId);
+        members.forEach(m -> {
+            if (m.getProfileImage() != null) {
+                m.setProfileImage(s3service.generatePresignedUrl(m.getProfileImage()));
+            }
+        });
         TravelProject p = projectMapper.findById(projectId);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
