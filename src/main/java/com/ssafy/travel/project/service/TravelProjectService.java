@@ -37,13 +37,16 @@ public class TravelProjectService {
     private final TravelItineraryMapper itineraryMapper;
     private final TravelProjectPlaceMapper placeMapper;
     private final S3Service s3service;
-    
-    public String calStatus (LocalDate start, LocalDate end) {
-    	LocalDate today = LocalDate.now();
-    	
-    	if(today.isBefore(start)) return "UPCOMING";
-    	else if(!today.isAfter(end)) return "IN_PROGRESS";
-    	else return "DONE";
+
+    public String calStatus(LocalDate start, LocalDate end) {
+        LocalDate today = LocalDate.now();
+
+        if (today.isBefore(start))
+            return "UPCOMING";
+        else if (!today.isAfter(end))
+            return "IN_PROGRESS";
+        else
+            return "DONE";
     }
 
     public List<TravelProjectResponseDto> getMyProjects(Long userId, String projectType) {
@@ -63,64 +66,63 @@ public class TravelProjectService {
             dto.setTitle(p.getTitle());
             dto.setStartDate(p.getStartDate());
             dto.setEndDate(p.getEndDate());
-            dto.setThumbnail(p.getThumbnail());
+            dto.setThumbnail(s3service.generatePresignedUrl(p.getThumbnail()));
             dto.setLocation(p.getLocation());
             dto.setProjectType(p.getProjectType());
             dto.setStatus(status);
             dto.setMemberCount(projectMemberMapper.countMembersByProjectId(p.getProjectId()));
-            
+
             result.add(dto);
         }
         return result;
     }
-    
+
     public TravelProjectResponseDto createProject(Long userId,
             TravelProjectRequestDto req, MultipartFile file) throws IOException {
-    	String imageUrl = null;
-    	if (file != null && !file.isEmpty()) {
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) {
             imageUrl = s3service.upload(file, "profile");
         }
-    	
-		// TravelProject 도메인 생성
-		TravelProject project = new TravelProject();
-		project.setOwnerId(userId);
-		project.setTitle(req.getTitle());
-		project.setLocation(req.getLocation());
-		project.setStartDate(req.getStartDate());
-		project.setEndDate(req.getEndDate());
-		project.setProjectType(req.getProjectType());
-		project.setThumbnail(imageUrl);
-		
-		// DB 저장 (projectId 자동 세팅됨)
-		projectMapper.createProject(project);
-		projectMemberMapper.insertMember(project.getProjectId(), userId, "OWNER");
-		
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate start = LocalDate.parse(project.getStartDate(), formatter);
+
+        // TravelProject 도메인 생성
+        TravelProject project = new TravelProject();
+        project.setOwnerId(userId);
+        project.setTitle(req.getTitle());
+        project.setLocation(req.getLocation());
+        project.setStartDate(req.getStartDate());
+        project.setEndDate(req.getEndDate());
+        project.setProjectType(req.getProjectType());
+        project.setThumbnail(imageUrl);
+
+        // DB 저장 (projectId 자동 세팅됨)
+        projectMapper.createProject(project);
+        projectMemberMapper.insertMember(project.getProjectId(), userId, "OWNER");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(project.getStartDate(), formatter);
         LocalDate end = LocalDate.parse(project.getEndDate(), formatter);
         String status = calStatus(start, end);
-		
-		// 응답 DTO 생성
-		TravelProjectResponseDto res = new TravelProjectResponseDto();
-		res.setProjectId(project.getProjectId());
-		res.setTitle(project.getTitle());
-		res.setLocation(project.getLocation());
-		res.setStartDate(project.getStartDate());
-		res.setEndDate(project.getEndDate());
-		res.setProjectType(project.getProjectType());
-		res.setThumbnail(project.getThumbnail());
+
+        // 응답 DTO 생성
+        TravelProjectResponseDto res = new TravelProjectResponseDto();
+        res.setProjectId(project.getProjectId());
+        res.setTitle(project.getTitle());
+        res.setLocation(project.getLocation());
+        res.setStartDate(project.getStartDate());
+        res.setEndDate(project.getEndDate());
+        res.setProjectType(project.getProjectType());
+        res.setThumbnail(s3service.generatePresignedUrl(project.getThumbnail()));
         res.setStatus(status);
-		
-		return res;
-	}
-    
+
+        return res;
+    }
+
     @Transactional
     public TravelProjectResponseDto updateProject(
             Long projectId,
             Long userId,
             TravelProjectRequestDto dto,
-            MultipartFile file
-    ) throws IOException {
+            MultipartFile file) throws IOException {
 
         // 1. 기존 프로젝트 조회
         TravelProject project = projectMapper.findById(projectId);
@@ -157,24 +159,24 @@ public class TravelProjectService {
         res.setStartDate(project.getStartDate());
         res.setEndDate(project.getEndDate());
         res.setProjectType(project.getProjectType());
-        res.setThumbnail(project.getThumbnail());
+        res.setThumbnail(s3service.generatePresignedUrl(project.getThumbnail()));
         res.setStatus(project.getStatus());
 
         return res;
     }
-    
+
     @Transactional
     public void deleteProject(Long projectId, Long requesterId) {
 
         // 1) 요청자가 프로젝트 멤버인지 확인
         TravelProjectMember requester = projectMemberMapper.findOne(projectId, requesterId);
         if (requester == null) {
-        	throw new CustomException(ErrorCode.FORBIDDEN);
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         // 2) OWNER인지 확인
         if (!"OWNER".equals(requester.getRole())) {
-        	throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
+            throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
         }
 
         // 3) 순서대로 관련 데이터 제거
@@ -186,37 +188,37 @@ public class TravelProjectService {
         // 4) 마지막으로 프로젝트 삭제
         projectMapper.delete(projectId);
     }
-    
+
     public TravelProjectDetailResponseDto getProjectDetail(Long userId, Long projectId) {
-    	validate(userId, projectId);
-    	List<TravelProjectMemberResponseDto> members = projectMemberMapper.findMembers(projectId);
-    	TravelProject p = projectMapper.findById(projectId);
-    	
-    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    	LocalDate start = LocalDate.parse(p.getStartDate(), formatter);
+        validate(userId, projectId);
+        List<TravelProjectMemberResponseDto> members = projectMemberMapper.findMembers(projectId);
+        TravelProject p = projectMapper.findById(projectId);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(p.getStartDate(), formatter);
         LocalDate end = LocalDate.parse(p.getEndDate(), formatter);
         String status = calStatus(start, end);
-    	
-    	TravelProjectResponseDto dto = new TravelProjectResponseDto();
+
+        TravelProjectResponseDto dto = new TravelProjectResponseDto();
         dto.setProjectId(p.getProjectId());
         dto.setTitle(p.getTitle());
         dto.setStartDate(p.getStartDate());
         dto.setEndDate(p.getEndDate());
-        dto.setThumbnail(p.getThumbnail());
+        dto.setThumbnail(s3service.generatePresignedUrl(p.getThumbnail()));
         dto.setLocation(p.getLocation());
         dto.setProjectType(p.getProjectType());
         dto.setStatus(status);
         dto.setMemberCount(members.size());
-        
+
         TravelProjectDetailResponseDto response = new TravelProjectDetailResponseDto();
         response.setMembers(members);
         response.setProject(dto);
-    	
-    	return response;
+
+        return response;
     }
-    
+
     public void validate(Long userId, Long projectId) {
-    	// 1. 프로젝트 유효성 체크
+        // 1. 프로젝트 유효성 체크
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
             throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
@@ -227,5 +229,5 @@ public class TravelProjectService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
-    
+
 }

@@ -16,7 +16,6 @@ import com.ssafy.global.service.S3Service;
 import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.service.PlaceService;
 import com.ssafy.travel.itinerary.mapper.TravelItineraryMapper;
-import com.ssafy.travel.place.dto.TravelProjectPlaceRequestDto;
 import com.ssafy.travel.place.entity.TravelProjectPlace;
 import com.ssafy.travel.place.mapper.TravelProjectPlaceMapper;
 
@@ -49,7 +48,8 @@ public class TravelProjectPlaceService {
         }
     }
 
-    public TravelProjectPlace addPlace(Long projectId, String googlePlaceId, Long userId, String status) throws IOException {
+    public TravelProjectPlace addPlace(Long projectId, String googlePlaceId, Long userId, String status)
+            throws IOException {
         // 0. 권한 확인
         checkPermission(projectId, userId);
 
@@ -59,7 +59,7 @@ public class TravelProjectPlaceService {
         }
 
         // 1. googlePlaceId로 장소 정보 조회 (캐시 또는 API)
-    	PlaceDto placeDetails = (PlaceDto) placeService.getPlaceBriefDetails(googlePlaceId, -1L);
+        PlaceDto placeDetails = (PlaceDto) placeService.getPlaceBriefDetails(googlePlaceId, -1L);
 
         // 2. DTO → Entity 변환
         TravelProjectPlace place = new TravelProjectPlace();
@@ -67,17 +67,18 @@ public class TravelProjectPlaceService {
         place.setGooglePlaceId(googlePlaceId);
         place.setPlaceName(placeDetails.getName());
         place.setPlaceAddress(placeDetails.getFormattedAddress());
-        if(status!=null) place.setStatus(status);
+        if (status != null)
+            place.setStatus(status);
 
         if (placeDetails.getTypes() != null && !placeDetails.getTypes().isEmpty()) {
             place.setPlaceType(PlaceTypeConverter.translatePlaceTypeToKorean(placeDetails.getTypes()));
         }
-        
+
         if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
-        	String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0), "place-thumbnail");
+            String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0), "place-thumbnail");
             place.setThumbnail(s3Url);
         }
-        
+
         Map<String, Object> geometry = placeDetails.getGeometry();
         if (geometry != null) {
             place.setLatitude((Double) geometry.get("lat"));
@@ -86,7 +87,7 @@ public class TravelProjectPlaceService {
 
         // 3. DB 저장
         placeMapper.insertPlace(place);
-        
+
         return place;
     }
 
@@ -98,7 +99,7 @@ public class TravelProjectPlaceService {
         if (travelItineraryMapper.isPlaceInItinerary(placeId)) {
             throw new CustomException(ErrorCode.PLACE_IN_USE);
         }
-        
+
         // 2. 장소 삭제
         placeMapper.deletePlace(placeId, projectId);
     }
@@ -133,7 +134,7 @@ public class TravelProjectPlaceService {
                         .latitude(place.getLatitude())
                         .longitude(place.getLongitude())
                         .googlePlaceId(place.getGooglePlaceId())
-                        .thumbnail(place.getThumbnail())
+                        .thumbnail(s3Service.generatePresignedUrl(place.getThumbnail()))
                         .placeType(place.getPlaceType())
                         .createdAt(place.getCreatedAt())
                         .build())

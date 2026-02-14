@@ -73,7 +73,6 @@ public class TravelItineraryService {
         }
     }
 
-
     @Transactional(readOnly = true)
     public ItineraryResponseDto getItinerary(long projectId, long userId) {
         // 0. 권한 체크
@@ -127,7 +126,8 @@ public class TravelItineraryService {
 
         // 1. 프로젝트 조회
         TravelProject project = projectMapper.findById(projectId);
-        if (project == null) throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        if (project == null)
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
 
         // 2. 여행 일수 계산
         int tripDays = calculateTripDays(project);
@@ -143,10 +143,8 @@ public class TravelItineraryService {
                 .map(TravelProjectPlace::getPlaceId)
                 .collect(Collectors.toSet());
 
-
-
         List<? extends ItineraryCandidateResponseDto> candidates = null;
-        if(project.getProjectType().equals("GROUP")) {
+        if (project.getProjectType().equals("GROUP")) {
             candidates = aiService.generateGroupItinerary(tripDays, places);
         } else {
             candidates = aiService.generateSoloItinerary(tripDays, places);
@@ -162,9 +160,10 @@ public class TravelItineraryService {
         return response;
     }
 
-    //ai 추천 경로에서 적용되지 않은 속성들 적용
+    // ai 추천 경로에서 적용되지 않은 속성들 적용
     @Transactional
-    public void enrichPlacesFromDbAndHandleNewPlaces(List<? extends ItineraryCandidateResponseDto> candidates,Long projectId, Long userId) throws IOException {
+    public void enrichPlacesFromDbAndHandleNewPlaces(List<? extends ItineraryCandidateResponseDto> candidates,
+            Long projectId, Long userId) throws IOException {
         // Map to track newly created places within this transaction to avoid duplicates
         java.util.Map<String, TravelProjectPlace> newlyCreatedPlaces = new java.util.HashMap<>();
 
@@ -192,7 +191,8 @@ public class TravelItineraryService {
                             } catch (CustomException e) {
                                 if (e.getErrorCode() == ErrorCode.PLACE_NOT_FOUND) {
                                     // AI가 추천한 장소를 찾을 수 없으면, 목록에서 제거
-                                    System.out.println("Skipping unsearchable place suggested by AI: " + place.getPlaceName());
+                                    System.out.println(
+                                            "Skipping unsearchable place suggested by AI: " + place.getPlaceName());
                                     iterator.remove();
                                     continue; // Skip to the next place
                                 } else {
@@ -208,7 +208,7 @@ public class TravelItineraryService {
         }
     }
 
-    //dto의 일부 속성들 (ai가 생성하지 않은 속성들)을 entity의 속성으로 대체
+    // dto의 일부 속성들 (ai가 생성하지 않은 속성들)을 entity의 속성으로 대체
     private void applyDbPlace(ItineraryPlaceDto dto, TravelProjectPlace entity) {
         dto.setPlaceId(entity.getPlaceId());
         dto.setPlaceName(entity.getPlaceName());
@@ -219,18 +219,20 @@ public class TravelItineraryService {
         dto.setThumbnail(entity.getThumbnail());
     }
 
-    //새로 추가된 장소를 db에 임시 저장
-    private TravelProjectPlace createTempPlaceFromGoogle(String placeName, Long projectId, Long userId) throws IOException {
+    // 새로 추가된 장소를 db에 임시 저장
+    private TravelProjectPlace createTempPlaceFromGoogle(String placeName, Long projectId, Long userId)
+            throws IOException {
         List<PlaceSearchItemDto> places = googlePlaceService.searchPlaces(placeName, null, null, null).getPlaces();
         if (places.isEmpty()) {
-            throw new CustomException(ErrorCode.PLACE_NOT_FOUND, "Google 지도에서 '" + placeName + "'에 대한 검색 결과를 찾을 수 없습니다.");
+            throw new CustomException(ErrorCode.PLACE_NOT_FOUND,
+                    "Google 지도에서 '" + placeName + "'에 대한 검색 결과를 찾을 수 없습니다.");
         }
         String googlePlaceId = places.get(0).getPlaceId();
         TravelProjectPlace place = projectPlaceService.addPlace(projectId, googlePlaceId, userId, "TEMP");
         return place;
     }
 
-    //추천한 AI 경로 중 선택된 결과 저장
+    // 추천한 AI 경로 중 선택된 결과 저장
     @Transactional
     public void applySelectedCandidate(Long userId, Long projectId, ItineraryApplyRequestDto request) {
         TravelProject project = projectMapper.findById(projectId);
@@ -240,21 +242,16 @@ public class TravelItineraryService {
         Set<Long> validPlaceIds = places.stream()
                 .map(TravelProjectPlace::getPlaceId)
                 .collect(Collectors.toSet());
-        System.out.println(validPlaceIds.toString());
 
         // Redis에서 AI 결과 조회
         @SuppressWarnings("unchecked")
-        List<ItineraryCandidateResponseDto> candidates =
-                aiResultCacheService.get(
-                        request.getAiResultId(),
-                        List.class
-                );
+        List<ItineraryCandidateResponseDto> candidates = aiResultCacheService.get(
+                request.getAiResultId(),
+                List.class);
         aiService.validate(candidates, validPlaceIds);
 
-
         // 선택된 후보 찾기
-        ItineraryCandidateResponseDto selected =
-                findSelectedCandidate(candidates, request.getRouteType());
+        ItineraryCandidateResponseDto selected = findSelectedCandidate(candidates, request.getRouteType());
 
         // 기존 데이터 삭제
         itineraryMapper.deleteByProjectId(projectId);
@@ -269,8 +266,7 @@ public class TravelItineraryService {
                         projectId,
                         day.getDay(),
                         order++,
-                        place.getPlaceId()
-                );
+                        place.getPlaceId());
             }
         });
 
@@ -287,16 +283,14 @@ public class TravelItineraryService {
                 .map(ItineraryPlaceDto::getPlaceId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        List<TravelProjectPlace> tempPlaces =
-                projectPlaceMapper.findByProjectIdAndStatus(projectId, "TEMP");
+        List<TravelProjectPlace> tempPlaces = projectPlaceMapper.findByProjectIdAndStatus(projectId, "TEMP");
 
         for (TravelProjectPlace place : tempPlaces) {
             if (selectedPlaceIds.contains(place.getPlaceId())) {
                 // 선택된 TEMP → CONFIRMED
                 projectPlaceMapper.updateStatus(
                         place.getPlaceId(),
-                        "CONFIRMED"
-                );
+                        "CONFIRMED");
             } else {
                 // 선택 안 된 TEMP → DELETE
                 projectPlaceMapper.deletePlace(place.getPlaceId(), projectId);
@@ -304,18 +298,16 @@ public class TravelItineraryService {
         }
     }
 
-    //선택된 여행 루트 반환
-    @SuppressWarnings("unchecked")
-    private ItineraryCandidateResponseDto findSelectedCandidate(List<ItineraryCandidateResponseDto> candidates, int routeType) {
+    // 선택된 여행 루트 반환
+    private ItineraryCandidateResponseDto findSelectedCandidate(List<ItineraryCandidateResponseDto> candidates,
+            int routeType) {
         return (ItineraryCandidateResponseDto) candidates.stream()
                 .filter(c -> c.getRouteType() == routeType)
                 .findFirst()
-                .orElseThrow(() ->
-                        new CustomException(ErrorCode.INVALID_ROUTE_SELECTION)
-                );
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_ROUTE_SELECTION));
     }
 
-    //여행 일수 계산
+    // 여행 일수 계산
     private int calculateTripDays(TravelProject project) {
         LocalDate start = LocalDate.parse(project.getStartDate());
         LocalDate end = LocalDate.parse(project.getEndDate());
@@ -323,7 +315,8 @@ public class TravelItineraryService {
     }
 
     @Transactional
-    public void updateItinerary(Long projectId, Long userId, ItineraryUpdateRequestDto updateRequest) throws IOException {
+    public void updateItinerary(Long projectId, Long userId, ItineraryUpdateRequestDto updateRequest)
+            throws IOException {
         // Permission check
         if (!projectMemberMapper.isMember(projectId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -345,24 +338,28 @@ public class TravelItineraryService {
 
                 // If googlePlaceId is provided, it's a new or potentially existing place
                 if (placeDto.getGooglePlaceId() != null) {
-                    TravelProjectPlace existingPlace = projectPlaceMapper.findByGooglePlaceIdAndProjectId(placeDto.getGooglePlaceId(), projectId);
+                    TravelProjectPlace existingPlace = projectPlaceMapper
+                            .findByGooglePlaceIdAndProjectId(placeDto.getGooglePlaceId(), projectId);
                     if (existingPlace != null) {
                         placeId = existingPlace.getPlaceId();
                     } else {
                         // Add the new place to the project
-                        TravelProjectPlace newPlace = projectPlaceService.addPlace(projectId, placeDto.getGooglePlaceId(), userId, "CONFIRMED");
+                        TravelProjectPlace newPlace = projectPlaceService.addPlace(projectId,
+                                placeDto.getGooglePlaceId(), userId, "CONFIRMED");
                         placeId = newPlace.getPlaceId();
                     }
                 }
 
                 if (placeId == null) {
-                    throw new CustomException(ErrorCode.INVALID_REQUEST, "Each place must have a valid placeId or googlePlaceId.");
+                    throw new CustomException(ErrorCode.INVALID_REQUEST,
+                            "Each place must have a valid placeId or googlePlaceId.");
                 }
 
                 // Verify the final placeId belongs to the project
                 TravelProjectPlace finalPlace = projectPlaceMapper.findByPlaceIdAndProjectId(placeId, projectId);
                 if (finalPlace == null) {
-                    throw new CustomException(ErrorCode.PLACE_NOT_FOUND, "Place with ID " + placeId + " not found in this project.");
+                    throw new CustomException(ErrorCode.PLACE_NOT_FOUND,
+                            "Place with ID " + placeId + " not found in this project.");
                 }
 
                 ItineraryItemDto resolvedPlace = new ItineraryItemDto();
@@ -378,7 +375,8 @@ public class TravelItineraryService {
 
         // 2. Insert the new itinerary
         for (ItineraryItemDto resolvedPlace : resolvedPlaces) {
-            itineraryMapper.insertItineraryPlace(projectId, resolvedPlace.getDay(), resolvedPlace.getOrder(), resolvedPlace.getPlaceId());
+            itineraryMapper.insertItineraryPlace(projectId, resolvedPlace.getDay(), resolvedPlace.getOrder(),
+                    resolvedPlace.getPlaceId());
         }
     }
 }
