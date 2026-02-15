@@ -25,6 +25,7 @@ public class TravelProjectMemberService {
     private final TravelProjectMemberMapper memberMapper;
     private final TravelProjectMapper projectMapper;
     private final S3Service s3Service;
+    private final ProjectEventService eventService;
 
     public List<TravelProjectMemberResponseDto> getMembers(Long projectId, Long userId) {
         // 1. 프로젝트 유효성 체크
@@ -69,6 +70,9 @@ public class TravelProjectMemberService {
 
         // 4) 실제 삭제
         memberMapper.deleteMember(projectId, memberId);
+
+        // 5) 알림 전송
+        eventService.notifyProjectUpdate(projectId, "PROJECT_UPDATED");
     }
 
 }

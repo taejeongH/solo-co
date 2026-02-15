@@ -24,6 +24,7 @@ public class TravelProjectInviteService {
 
     private final TravelProjectInviteMapper inviteMapper;
     private final TravelProjectMapper projectMapper;
+    private final ProjectEventService eventService;
 
     @Value("${app.frontend.url:https://solo-co.netlify.app}")
     private String frontendBaseUrl;
@@ -31,18 +32,18 @@ public class TravelProjectInviteService {
     @Transactional
     public InviteLinkResponseDto createInviteLink(Long projectId, Long userId) {
 
-    	//project가 존재한지 확인
+        // project가 존재한지 확인
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
             throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
 
-        //project 소유자인지 확인
+        // project 소유자인지 확인
         if (!project.getOwnerId().equals(userId)) {
             throw new CustomException(ErrorCode.PROJECT_OWNER_ONLY);
         }
-        
-        //초대 링크가 이미 존재하는 지 확인
+
+        // 초대 링크가 이미 존재하는 지 확인
         TravelProjectInvite existing = inviteMapper.findByProjectId(projectId);
         if (existing != null) {
 
@@ -52,15 +53,14 @@ public class TravelProjectInviteService {
                 inviteMapper.deleteById(existing.getInviteId());
             } else {
                 // 유효하면 기존 값 반환
-            	InviteLinkResponseDto dto = new InviteLinkResponseDto();
+                InviteLinkResponseDto dto = new InviteLinkResponseDto();
                 dto.setProjectId(existing.getProjectId());
                 dto.setInviteCode(existing.getInviteCode());
                 dto.setInviteUrl(frontendBaseUrl + "/invite/" + existing.getInviteCode());
                 return dto;
             }
         }
-        
-        
+
         // 2) 초대 코드 생성
         String code = UUID.randomUUID().toString().replace("-", "");
 
@@ -68,7 +68,7 @@ public class TravelProjectInviteService {
         invite.setProjectId(projectId);
         invite.setInviteCode(code);
         invite.setExpiresAt(LocalDateTime.now().plusDays(7)); // 7일 유효
-        invite.setMaxUses(null);   // 제한 없으면 null
+        invite.setMaxUses(null); // 제한 없으면 null
         invite.setUseCount(0);
 
         inviteMapper.insert(invite);
@@ -81,7 +81,7 @@ public class TravelProjectInviteService {
 
         return dto;
     }
-    
+
     public InviteValidationResponseDto validateInvite(String code) {
 
         TravelProjectInvite invite = inviteMapper.findByCode(code);
@@ -99,7 +99,7 @@ public class TravelProjectInviteService {
 
         return res;
     }
-    
+
     @Transactional
     public void joinProject(String inviteCode, Long userId) {
 
@@ -118,6 +118,9 @@ public class TravelProjectInviteService {
 
         // 참여 추가
         inviteMapper.addMember(projectId, userId);
-    }	
+
+        // 알림 전송
+        eventService.notifyProjectUpdate(projectId, "PROJECT_UPDATED");
+    }
 
 }

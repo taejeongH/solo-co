@@ -44,17 +44,28 @@ public class TravelItineraryController {
 
     @GetMapping("/{projectId}/itinerary")
     @Operation(summary = "여행 경로 조회", security = @SecurityRequirement(name = "JWT Auth"))
-    public ResponseEntity<ItineraryResponseDto> getItinerary(@PathVariable long projectId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ItineraryResponseDto> getItinerary(@PathVariable long projectId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         ItineraryResponseDto itinerary = itineraryService.getItinerary(projectId, userDetails.getUserId());
         return ResponseEntity.ok(itinerary);
     }
 
     @PostMapping("/{projectId}/itinerary/auto-generate")
     @Operation(summary = "여행 경로 AI 추천", security = @SecurityRequirement(name = "JWT Auth"))
-    public ResponseEntity<?> autoGenerate(@PathVariable Long projectId, @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+    public ResponseEntity<?> autoGenerate(@PathVariable Long projectId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
 
         AutoGenerateResponse response = itineraryService.autoGenerate(projectId, userDetails.getUserId());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{projectId}/itinerary/candidates/{aiResultId}")
+    @Operation(summary = "여행 경로 AI 후보 조회", security = @SecurityRequirement(name = "JWT Auth"))
+    public ResponseEntity<?> getAiCandidates(
+            @PathVariable Long projectId,
+            @PathVariable String aiResultId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(itineraryService.getAiCandidates(projectId, userDetails.getUserId(), aiResultId));
     }
 
     @PostMapping("/{projectId}/itinerary/ai-select")
@@ -81,8 +92,8 @@ public class TravelItineraryController {
     @GetMapping("/test-ai")
     public String testAi() {
         return chatClient.prompt()
-            .user("hello world")
-            .call()
-            .content();
+                .user("hello world")
+                .call()
+                .content();
     }
 }

@@ -32,31 +32,32 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-        	.cors(cors -> {})
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", 
-                        "/swagger-ui/**", "/swagger-ui.html",
-                        "/v3/api-docs/**", "/api-docs/**",
-                        "/webjars/**", "/error", "/favicon.ico",
-                        "/css/**", "/js/**", "/images/**"
-                ).permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/reissue").permitAll()
-                .requestMatchers("/api/travels/invite/validate").permitAll()
-                .requestMatchers("/api/travels/invite/join").authenticated()
-                .requestMatchers("/api/travels/**").authenticated()
-                .requestMatchers("/api/users/**").authenticated()
+                .cors(cors -> {
+                })
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/",
+                                "/swagger-ui/**", "/swagger-ui.html",
+                                "/v3/api-docs/**", "/api-docs/**",
+                                "/webjars/**", "/error", "/favicon.ico",
+                                "/css/**", "/js/**", "/images/**")
+                        .permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/reissue").permitAll()
+                        .requestMatchers("/api/travels/invite/validate").permitAll()
+                        .requestMatchers("/api/travels/invite/join").authenticated()
+                        .requestMatchers("/api/travels/**").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
 
-                .anyRequest().authenticated()
-            )
+                        .anyRequest().authenticated())
 
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

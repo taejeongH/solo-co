@@ -23,6 +23,7 @@ import com.ssafy.travel.place.service.TravelProjectPlaceService;
 import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
+import com.ssafy.travel.project.service.ProjectEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +58,7 @@ public class TravelItineraryService {
     private final TravelProjectPlaceMapper projectPlaceMapper;
     private final ItineraryAlgorithmService algorithmService;
     private final S3Service s3Service;
+    private final ProjectEventService eventService;
 
     @Transactional // Ensure atomicity of deletions
     public void deleteItinerary(Long projectId, Long userId) {
@@ -81,6 +83,9 @@ public class TravelItineraryService {
         for (TravelProjectPlace place : tempPlaces) {
             projectPlaceMapper.deletePlace(place.getPlaceId(), projectId);
         }
+
+        // 4. 알림 전송
+        eventService.notifyProjectUpdate(projectId, "ITINERARY_UPDATED");
     }
 
     @Transactional(readOnly = true)
@@ -128,6 +133,8 @@ public class TravelItineraryService {
     }
 
     public AutoGenerateResponse autoGenerate(Long projectId, Long userId) throws IOException {
+        // 알림 전송 (생성 시작)
+        eventService.notifyProjectUpdate(projectId, "AI_GENERATING_START");
 
         // 0. 기존 TEMP 상태의 장소들을 모두 삭제
         List<TravelProjectPlace> tempPlacesToDelete = projectPlaceMapper.findByProjectIdAndStatus(projectId, "TEMP");
@@ -190,8 +197,10 @@ public class TravelItineraryService {
         enrichPlacesFromDbAndHandleNewPlaces(candidates, projectId, userId);
         aiResultCacheService.save(aiResultId, candidates);
 
-        response.setProjectId(projectId);
         response.setAiResultId(aiResultId);
+
+        // 알림 전송 (생성 완료) - aiResultId 포함
+        eventService.notifyProjectUpdate(projectId, "AI_GENERATING_DONE", aiResultId);
 
         return response;
     }
@@ -364,6 +373,9 @@ public class TravelItineraryService {
                 projectPlaceMapper.deletePlace(place.getPlaceId(), projectId);
             }
         }
+
+        // 4. 알림 전송
+        eventService.notifyProjectUpdate(projectId, "ITINERARY_UPDATED");
     }
 
     // 선택된 여행 루트 반환
@@ -446,5 +458,19 @@ public class TravelItineraryService {
             itineraryMapper.insertItineraryPlace(projectId, resolvedPlace.getDay(), resolvedPlace.getOrder(),
                     resolvedPlace.getPlaceId());
         }
+
+        // 3. 알림 전송
+        eventService.notifyProjectUpdate(projectId, "ITINERARY_UPDATED");
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ItineraryCandidateResponseDto> getAiCandidates(Long projectId, Long userId, String aiResultId) {
+        // 0. 권한 체크
+        if (!projectMemberMapper.isMember(projectId, userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        // 1. 캐시에서 조회
+        return aiResultCacheService.get(aiResultId, List.class);
     }
 }

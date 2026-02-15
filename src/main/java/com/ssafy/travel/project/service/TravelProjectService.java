@@ -37,6 +37,7 @@ public class TravelProjectService {
     private final TravelItineraryMapper itineraryMapper;
     private final TravelProjectPlaceMapper placeMapper;
     private final S3Service s3service;
+    private final ProjectEventService eventService;
 
     public String calStatus(LocalDate start, LocalDate end) {
         LocalDate today = LocalDate.now();
@@ -151,7 +152,10 @@ public class TravelProjectService {
 
         projectMapper.update(project);
 
-        // 5. Response 생성
+        // 5. 알림 전송
+        eventService.notifyProjectUpdate(projectId, "PROJECT_UPDATED");
+
+        // 6. Response 생성
         TravelProjectResponseDto res = new TravelProjectResponseDto();
         res.setProjectId(project.getProjectId());
         res.setTitle(project.getTitle());
@@ -187,6 +191,9 @@ public class TravelProjectService {
 
         // 4) 마지막으로 프로젝트 삭제
         projectMapper.delete(projectId);
+
+        // 5) 알림 전송
+        eventService.notifyProjectUpdate(projectId, "PROJECT_DELETED");
     }
 
     public TravelProjectDetailResponseDto getProjectDetail(Long userId, Long projectId) {

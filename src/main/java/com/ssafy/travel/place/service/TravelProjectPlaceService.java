@@ -18,6 +18,7 @@ import com.ssafy.place.service.PlaceService;
 import com.ssafy.travel.itinerary.mapper.TravelItineraryMapper;
 import com.ssafy.travel.place.entity.TravelProjectPlace;
 import com.ssafy.travel.place.mapper.TravelProjectPlaceMapper;
+import com.ssafy.travel.project.service.ProjectEventService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +35,7 @@ public class TravelProjectPlaceService {
     private final TravelProjectMapper projectMapper;
     private final TravelProjectMemberMapper memberMapper;
     private final TravelItineraryMapper travelItineraryMapper;
+    private final ProjectEventService eventService;
 
     private void checkPermission(Long projectId, Long userId) {
         // 1. 프로젝트 존재 여부 확인
@@ -88,6 +90,12 @@ public class TravelProjectPlaceService {
         // 3. DB 저장
         placeMapper.insertPlace(place);
 
+        // 4. 알림 전송 (TEMP인 경우 제외 - AI 생성 중에는 너무 많은 알림이 갈 수 있으므로 CONFIRMED인 경우만 권장하지만,
+        // 실시간 편집을 위해 일단 보냄)
+        if ("CONFIRMED".equals(status)) {
+            eventService.notifyProjectUpdate(projectId, "PLACE_ADDED");
+        }
+
         return place;
     }
 
@@ -102,6 +110,9 @@ public class TravelProjectPlaceService {
 
         // 2. 장소 삭제
         placeMapper.deletePlace(placeId, projectId);
+
+        // 3. 알림 전송
+        eventService.notifyProjectUpdate(projectId, "PLACE_DELETED");
     }
 
     public List<ProjectPlaceListResponseDto> getPlaces(Long projectId, Long userId, String sortBy, String order) {
