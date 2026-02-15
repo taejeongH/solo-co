@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ssafy.ai.dto.SoloPlaceAnalysisDto;
 import com.ssafy.ai.prompt.GroupTravelPromptBuilder;
+import com.ssafy.ai.prompt.GroupTravelRefinementPromptBuilder;
 import com.ssafy.ai.prompt.PlaceAnalysisPromptBuilder;
 import com.ssafy.ai.prompt.SoloTravelPromptBuilder;
+import com.ssafy.ai.prompt.SoloTravelRefinementPromptBuilder;
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
 import com.ssafy.travel.itinerary.dto.GroupItineraryCandidateResponseDto;
@@ -29,14 +31,20 @@ public class AIService {
     private final GroupTravelPromptBuilder groupPromptBuilder;
     private final SoloTravelPromptBuilder soloPromptBuilder;
     private final PlaceAnalysisPromptBuilder placeAnalysisPromptBuilder;
+    private final SoloTravelRefinementPromptBuilder soloRefinementPromptBuilder;
+    private final GroupTravelRefinementPromptBuilder groupRefinementPromptBuilder;
 
     public AIService(@Qualifier("openAiChatClient") ChatClient openAiChatClient,
             GroupTravelPromptBuilder groupPromptBuilder, SoloTravelPromptBuilder soloPromptBuilder,
-            PlaceAnalysisPromptBuilder placeAnalysisPromptBuilder) {
+            PlaceAnalysisPromptBuilder placeAnalysisPromptBuilder,
+            SoloTravelRefinementPromptBuilder soloRefinementPromptBuilder,
+            GroupTravelRefinementPromptBuilder groupRefinementPromptBuilder) {
         this.openAiChatClient = openAiChatClient;
         this.groupPromptBuilder = groupPromptBuilder;
         this.soloPromptBuilder = soloPromptBuilder;
         this.placeAnalysisPromptBuilder = placeAnalysisPromptBuilder;
+        this.soloRefinementPromptBuilder = soloRefinementPromptBuilder;
+        this.groupRefinementPromptBuilder = groupRefinementPromptBuilder;
     }
 
     @Cacheable(value = "soloPlaceAnalysis", key = "#placeDetails.path('place_id').asText()")
@@ -91,6 +99,40 @@ public class AIService {
 
         } catch (Exception e) {
             throw new RuntimeException("Solo itinerary AI generation failed", e);
+        }
+    }
+
+    public List<SoloItineraryCandidateResponseDto> refineSoloItinerary(int tripDays,
+            ItineraryCandidateResponseDto base) {
+        try {
+            var outputConverter = new BeanOutputConverter<>(
+                    new ParameterizedTypeReference<List<SoloItineraryCandidateResponseDto>>() {
+                    });
+            String prompt = soloRefinementPromptBuilder.build(base, tripDays) + "\n" + outputConverter.getFormat();
+
+            return openAiChatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .entity(outputConverter);
+        } catch (Exception e) {
+            throw new RuntimeException("Solo itinerary refinement failed", e);
+        }
+    }
+
+    public List<GroupItineraryCandidateResponseDto> refineGroupItinerary(int tripDays,
+            ItineraryCandidateResponseDto base) {
+        try {
+            var outputConverter = new BeanOutputConverter<>(
+                    new ParameterizedTypeReference<List<GroupItineraryCandidateResponseDto>>() {
+                    });
+            String prompt = groupRefinementPromptBuilder.build(base, tripDays) + "\n" + outputConverter.getFormat();
+
+            return openAiChatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .entity(outputConverter);
+        } catch (Exception e) {
+            throw new RuntimeException("Group itinerary refinement failed", e);
         }
     }
 
