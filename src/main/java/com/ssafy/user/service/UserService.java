@@ -50,34 +50,33 @@ public class UserService {
         response.setUserId(updated.getUserId());
         response.setEmail(updated.getEmail());
         response.setName(updated.getName());
-        response.setProfileImage(updated.getProfileImage());
+        response.setProfileImage(s3service.generatePresignedUrl(updated.getProfileImage()));
 
         return response;
     }
-    
+
     public void deleteUser(Long userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-        	throw new CustomException(ErrorCode.USER_NOT_FOUND);
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         userMapper.deleteUser(userId);
     }
-    
+
     public UserInfoResponseDto getMyInfo(Long userId) {
         User user = userMapper.findById(userId);
         if (user == null) {
-        	throw new CustomException(ErrorCode.USER_NOT_FOUND);
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         UserInfoResponseDto dto = new UserInfoResponseDto();
-        dto.setId(user.getUsername());      // 예시에서 id = username
+        dto.setId(user.getUsername()); // 예시에서 id = username
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
-        dto.setProfileImage(user.getProfileImage());
+        dto.setProfileImage(s3service.generatePresignedUrl(user.getProfileImage()));
 
         return dto;
     }
-
 
 }

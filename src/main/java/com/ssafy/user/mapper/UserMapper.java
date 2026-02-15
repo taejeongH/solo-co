@@ -8,15 +8,14 @@ import com.ssafy.auth.entity.User;
 @Mapper
 public interface UserMapper {
 
-    User findById(Long id);
+    User findById(@Param("userId") Long userId);
 
     int updateUser(
-        @Param("userId") Long userId,
-        @Param("name") String name,
-        @Param("profileImage") String profileImage,
-        @Param("password") String password,
-        @Param("email") String email
-    );
-    
+            @Param("userId") Long userId,
+            @Param("name") String name,
+            @Param("profileImage") String profileImage,
+            @Param("password") String password,
+            @Param("email") String email);
+
     void deleteUser(Long userId);
 }

@@ -14,6 +14,7 @@ import com.ssafy.travel.project.entity.TravelProject;
 import com.ssafy.travel.project.entity.TravelProjectMember;
 import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
+import com.ssafy.global.service.S3Service;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,8 @@ public class TravelProjectMemberService {
 
     private final TravelProjectMemberMapper memberMapper;
     private final TravelProjectMapper projectMapper;
+    private final S3Service s3Service;
+    private final ProjectEventService eventService;
 
     public List<TravelProjectMemberResponseDto> getMembers(Long projectId, Long userId) {
         // 1. 프로젝트 유효성 체크
@@ -35,9 +38,14 @@ public class TravelProjectMemberService {
         if (!memberMapper.isMember(projectId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-    	
-    	
-    	return memberMapper.findMembers(projectId);
+
+        List<TravelProjectMemberResponseDto> members = memberMapper.findMembers(projectId);
+        members.forEach(m -> {
+            if (m.getProfileImage() != null) {
+                m.setProfileImage(s3Service.generatePresignedUrl(m.getProfileImage()));
+            }
+        });
+        return members;
     }
 
     @Transactional
@@ -47,7 +55,7 @@ public class TravelProjectMemberService {
         TravelProjectMember requester = memberMapper.findOne(projectId, requesterId);
 
         if (requester == null) {
-        	throw new CustomException(ErrorCode.FORBIDDEN);
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         // 2) OWNER인지 체크
@@ -62,6 +70,9 @@ public class TravelProjectMemberService {
 
         // 4) 실제 삭제
         memberMapper.deleteMember(projectId, memberId);
+
+        // 5) 알림 전송
+        eventService.notifyProjectUpdate(projectId, "PROJECT_UPDATED");
     }
 
 }

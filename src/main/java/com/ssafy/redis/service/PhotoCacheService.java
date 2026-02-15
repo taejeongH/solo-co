@@ -11,17 +11,17 @@ import java.util.concurrent.TimeUnit;
 public class PhotoCacheService {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String PHOTO_CACHE_PREFIX = "photo_s3_url::";
+    private static final String PHOTO_CACHE_PREFIX = "photo_s3_key::";
     private static final long CACHE_DURATION_DAYS = 4;
 
-    public String getS3Url(String googlePlaceId, String photoReference) {
+    public String getS3Key(String googlePlaceId, String photoReference) {
         String key = buildKey(googlePlaceId, photoReference);
         return redisTemplate.opsForValue().get(key);
     }
 
-    public void cacheS3Url(String googlePlaceId, String photoReference, String s3Url) {
+    public void cacheS3Key(String googlePlaceId, String photoReference, String s3Key) {
         String key = buildKey(googlePlaceId, photoReference);
-        redisTemplate.opsForValue().set(key, s3Url, CACHE_DURATION_DAYS, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(key, s3Key, CACHE_DURATION_DAYS, TimeUnit.DAYS);
     }
 
     private String buildKey(String googlePlaceId, String photoReference) {
