@@ -1,5 +1,7 @@
 package com.ssafy.place.controller;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -7,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ssafy.place.dto.PlaceDetailDto;
-import com.ssafy.place.dto.PlaceDto;
 import com.ssafy.place.dto.PlaceSearchResponseDto;
 import com.ssafy.place.service.PlaceService;
 
@@ -26,41 +26,40 @@ public class PlaceController {
 
     @GetMapping("/search")
     @Operation(summary = "장소 검색 (Google Places API)")
-    public ResponseEntity<PlaceSearchResponseDto> searchPlaces(
+    public CompletableFuture<ResponseEntity<PlaceSearchResponseDto>> searchPlaces(
             @RequestParam String query,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) String nextPageToken
-    ) {
-        PlaceSearchResponseDto response = placeService.searchPlaces(query, location, type, nextPageToken);
-        return ResponseEntity.ok(response);
+            @RequestParam(required = false) String nextPageToken) {
+        return placeService.searchPlaces(query, location, type, nextPageToken)
+                .thenApply(ResponseEntity::ok);
     }
 
     @GetMapping("/{placeId}/brief")
     @Operation(summary = "장소 간략 정보 조회 (Google Places API)")
-    public ResponseEntity<?> getPlaceBriefDetails(
+    public CompletableFuture<ResponseEntity<?>> getPlaceBriefDetails(
             @PathVariable String placeId,
-            @RequestParam Long projectId
-    ) {
-        return ResponseEntity.ok(placeService.getPlaceBriefDetails(placeId, projectId));
+            @RequestParam Long projectId) {
+        return placeService.getPlaceBriefDetails(placeId, projectId)
+                .thenApply(ResponseEntity::ok);
     }
 
     @GetMapping("/{placeId}/details")
     @Operation(summary = "장소 상세 정보 조회 (Google Places API)")
-    public ResponseEntity<?> getPlaceFullDetails(
+    public CompletableFuture<ResponseEntity<?>> getPlaceFullDetails(
             @PathVariable String placeId,
-            @RequestParam Long projectId
-    ) {
-        return ResponseEntity.ok(placeService.getPlaceFullDetails(placeId, projectId));
+            @RequestParam Long projectId) {
+        return placeService.getPlaceFullDetails(placeId, projectId)
+                .thenApply(ResponseEntity::ok);
     }
 
     @GetMapping("/recommendations/solo-dining")
     @Operation(summary = "혼밥하기 좋은 음식점 추천 (Google Places API)")
-    public ResponseEntity<?> recommendSoloDining(
+    public CompletableFuture<ResponseEntity<?>> recommendSoloDining(
             @RequestParam double latitude,
             @RequestParam double longitude,
-            @RequestParam(defaultValue = "5000") int radius
-    ) {
-        return ResponseEntity.ok(placeService.recommendSoloDining(latitude, longitude, radius));
+            @RequestParam(defaultValue = "5000") int radius) {
+        return placeService.recommendSoloDining(latitude, longitude, radius)
+                .thenApply(ResponseEntity::ok);
     }
 }

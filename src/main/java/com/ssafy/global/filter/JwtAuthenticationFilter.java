@@ -22,42 +22,44 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService userDetailsService;
+        private final JwtTokenProvider jwtTokenProvider;
+        private final CustomUserDetailsService userDetailsService;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                        HttpServletResponse response,
+                        FilterChain filterChain)
+                        throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
+                String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
+                if (header != null && header.startsWith("Bearer ")) {
+                        String token = header.substring(7);
 
-            String username = jwtTokenProvider.getUsername(token);
+                        String username = jwtTokenProvider.getUsername(token);
 
-            //DB에서 사용자 정보 조회 → CustomUserDetails 반환
-            CustomUserDetails userDetails =
-                    (CustomUserDetails) userDetailsService.loadUserByUsername(username);
+                        // DB에서 사용자 정보 조회 → CustomUserDetails 반환
+                        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService
+                                        .loadUserByUsername(username);
 
-            //Authentication 생성
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,     // principal
-                            null,
-                            userDetails.getAuthorities()
-                    );
+                        // Authentication 생성
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                        userDetails, // principal
+                                        null,
+                                        userDetails.getAuthorities());
 
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-            );
+                        authentication.setDetails(
+                                        new WebAuthenticationDetailsSource().buildDetails(request));
 
-            // 🔥 SecurityContext에 저장
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        // 🔥 SecurityContext에 저장
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+
+                filterChain.doFilter(request, response);
         }
 
-        filterChain.doFilter(request, response);
-    }
+        @Override
+        protected boolean shouldNotFilterAsyncDispatch() {
+                return false;
+        }
 }
