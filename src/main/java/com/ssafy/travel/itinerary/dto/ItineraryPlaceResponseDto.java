@@ -20,4 +20,3 @@ public class ItineraryPlaceResponseDto {
     @JsonIgnore
     private Integer day;
 }
-

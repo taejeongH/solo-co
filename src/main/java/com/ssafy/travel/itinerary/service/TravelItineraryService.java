@@ -25,6 +25,7 @@ import com.ssafy.travel.project.mapper.TravelProjectMapper;
 import com.ssafy.travel.project.mapper.TravelProjectMemberMapper;
 import com.ssafy.travel.project.service.ProjectEventService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TravelItineraryService {
@@ -60,7 +62,7 @@ public class TravelItineraryService {
     private final S3Service s3Service;
     private final ProjectEventService eventService;
 
-    @Transactional // Ensure atomicity of deletions
+    @Transactional // 삭제 작업의 원자성 보장
     public void deleteItinerary(Long projectId, Long userId) {
         // 0. 권한 체크
         if (!projectMemberMapper.isMember(projectId, userId)) {
@@ -75,8 +77,8 @@ public class TravelItineraryService {
 
         // 2. 기존 경로 데이터 삭제
         itineraryMapper.deleteByProjectId(projectId);
-        soloMapper.deleteByProjectId(projectId); // Delete solo metadata if exists
-        groupMapper.deleteByProjectId(projectId); // Delete group metadata if exists
+        soloMapper.deleteByProjectId(projectId); // 솔로 메타데이터가 존재하면 삭제
+        groupMapper.deleteByProjectId(projectId); // 그룹 메타데이터가 존재하면 삭제
 
         // 3. 임시 장소(TEMP)도 모두 삭제
         List<TravelProjectPlace> tempPlaces = projectPlaceMapper.findByProjectIdAndStatus(projectId, "TEMP");
@@ -173,7 +175,7 @@ public class TravelItineraryService {
             }
         } catch (Exception e) {
             // AI 추천 실패 시 (할당량 초과 등), 알고리즘 결과만 반환하는 폴백 로직
-            System.err.println("AI Refinement failed: " + e.getMessage());
+            log.error("AI 고도화 실패: {}", e.getMessage());
 
             if (project.getProjectType().equals("GROUP")) {
                 GroupItineraryCandidateResponseDto fallback = new GroupItineraryCandidateResponseDto();
@@ -244,7 +246,7 @@ public class TravelItineraryService {
                                 projectId, userId);
                         enrichedMap.put(req, tempPlace);
                     } catch (Exception e) {
-                        System.err.println("Failed info fetch for " + req.name() + ": " + e.getMessage());
+                        log.error("Failed info fetch for {}: {}", req.name(), e.getMessage());
                     }
                 }, IO_EXECUTOR))
                 .collect(Collectors.toList());
@@ -398,7 +400,6 @@ public class TravelItineraryService {
     @Transactional
     public void updateItinerary(Long projectId, Long userId, ItineraryUpdateRequestDto updateRequest)
             throws IOException {
-        // Permission check
         if (!projectMemberMapper.isMember(projectId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
@@ -412,19 +413,17 @@ public class TravelItineraryService {
         if (updateRequest.getPlaces() != null) {
             for (ItineraryItemDto placeDto : updateRequest.getPlaces()) {
                 if (placeDto.getDay() == null || placeDto.getOrder() == null) {
-                    throw new CustomException(ErrorCode.INVALID_REQUEST, "Day and order are required for each place.");
+                    throw new CustomException(ErrorCode.INVALID_REQUEST, "각 장소의 날짜와 순서는 필수입니다.");
                 }
 
                 Long placeId = placeDto.getPlaceId();
 
-                // If googlePlaceId is provided, it's a new or potentially existing place
                 if (placeDto.getGooglePlaceId() != null) {
                     TravelProjectPlace existingPlace = projectPlaceMapper
                             .findByGooglePlaceIdAndProjectId(placeDto.getGooglePlaceId(), projectId);
                     if (existingPlace != null) {
                         placeId = existingPlace.getPlaceId();
                     } else {
-                        // Add the new place to the project
                         TravelProjectPlace newPlace = projectPlaceService.addPlace(projectId,
                                 placeDto.getGooglePlaceId(), userId, "CONFIRMED").join();
                         placeId = newPlace.getPlaceId();
@@ -433,14 +432,13 @@ public class TravelItineraryService {
 
                 if (placeId == null) {
                     throw new CustomException(ErrorCode.INVALID_REQUEST,
-                            "Each place must have a valid placeId or googlePlaceId.");
+                            "각 장소는 유효한 placeId 또는 googlePlaceId를 가져야 합니다.");
                 }
 
-                // Verify the final placeId belongs to the project
                 TravelProjectPlace finalPlace = projectPlaceMapper.findByPlaceIdAndProjectId(placeId, projectId);
                 if (finalPlace == null) {
                     throw new CustomException(ErrorCode.PLACE_NOT_FOUND,
-                            "Place with ID " + placeId + " not found in this project.");
+                            "ID가 " + placeId + "인 장소를 이 프로젝트에서 찾을 수 없습니다.");
                 }
 
                 ItineraryItemDto resolvedPlace = new ItineraryItemDto();
@@ -451,16 +449,13 @@ public class TravelItineraryService {
             }
         }
 
-        // 1. Delete the existing itinerary
         itineraryMapper.deleteByProjectId(projectId);
 
-        // 2. Insert the new itinerary
         for (ItineraryItemDto resolvedPlace : resolvedPlaces) {
             itineraryMapper.insertItineraryPlace(projectId, resolvedPlace.getDay(), resolvedPlace.getOrder(),
                     resolvedPlace.getPlaceId());
         }
 
-        // 3. 알림 전송
         eventService.notifyProjectUpdate(projectId, "ITINERARY_UPDATED");
     }
 

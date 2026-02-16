@@ -84,7 +84,7 @@ public class PlaceService {
 
 						if (!"OK".equals(status) && !"ZERO_RESULTS".equals(status)) {
 							throw new CustomException(ErrorCode.INVALID_REQUEST,
-									"Google Places API error: " + status + " - " + root.path("error_message").asText());
+									"Google Places API 오류: " + status + " - " + root.path("error_message").asText());
 						}
 
 						List<PlaceSearchItemDto> places = mapGooglePlaceResultsToDto(root.path("results"));
@@ -95,7 +95,7 @@ public class PlaceService {
 								.build();
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Error parsing Google Places API response: " + e.getMessage());
+								"Google Places API 응답 파싱 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}
@@ -131,7 +131,7 @@ public class PlaceService {
 
 		TravelProject project = travelProjectMapper.findById(projectId);
 		if (project == null) {
-			throw new CustomException(ErrorCode.PROJECT_NOT_FOUND, "Project not found with id: " + projectId);
+			throw new CustomException(ErrorCode.PROJECT_NOT_FOUND, "해당 ID의 프로젝트를 찾을 수 없습니다: " + projectId);
 		}
 		String projectType = project.getProjectType();
 
@@ -163,7 +163,7 @@ public class PlaceService {
 					try {
 						JsonNode root = objectMapper.readTree(response);
 						if (!"OK".equals(root.path("status").asText())) {
-							throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API error");
+							throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API 오류");
 						}
 						JsonNode result = root.path("result");
 
@@ -215,7 +215,7 @@ public class PlaceService {
 						}
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Personal place brief error: " + e.getMessage());
+								"개인 장소 요약 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}
@@ -263,7 +263,7 @@ public class PlaceService {
 					try {
 						JsonNode root = objectMapper.readTree(response);
 						if (!"OK".equals(root.path("status").asText())) {
-							throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API error");
+							throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API 오류");
 						}
 						JsonNode result = root.path("result");
 
@@ -340,7 +340,7 @@ public class PlaceService {
 						});
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Personal place brief with AI error: " + e.getMessage());
+								"AI를 포함한 개인 장소 요약 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}
@@ -365,7 +365,7 @@ public class PlaceService {
 						JsonNode root = objectMapper.readTree(response);
 						String status = root.path("status").asText();
 						if (!"OK".equals(status)) {
-							throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API error: " + status);
+							throw new CustomException(ErrorCode.INVALID_REQUEST, "Google Places API 오류: " + status);
 						}
 						JsonNode result = root.path("result");
 
@@ -440,7 +440,7 @@ public class PlaceService {
 						});
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Group place brief error: " + e.getMessage());
+								"그룹 장소 요약 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}
@@ -569,7 +569,7 @@ public class PlaceService {
 						});
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Personal place full error: " + e.getMessage());
+								"개인 장소 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}
@@ -697,7 +697,7 @@ public class PlaceService {
 						});
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Group place full error: " + e.getMessage());
+								"그룹 장소 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}
@@ -752,7 +752,7 @@ public class PlaceService {
 						return mapGooglePlaceResultsToDto(root.path("results"));
 					} catch (Exception e) {
 						throw new CustomException(ErrorCode.INTERNAL_ERROR,
-								"Error calling Google Places API: " + e.getMessage());
+								"Google Places API 호출 중 오류가 발생했습니다: " + e.getMessage());
 					}
 				});
 	}

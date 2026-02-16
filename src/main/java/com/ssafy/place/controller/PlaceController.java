@@ -22,44 +22,44 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PlaceController {
 
-    private final PlaceService placeService;
+        private final PlaceService placeService;
 
-    @GetMapping("/search")
-    @Operation(summary = "장소 검색 (Google Places API)")
-    public CompletableFuture<ResponseEntity<PlaceSearchResponseDto>> searchPlaces(
-            @RequestParam String query,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) String nextPageToken) {
-        return placeService.searchPlaces(query, location, type, nextPageToken)
-                .thenApply(ResponseEntity::ok);
-    }
+        @GetMapping("/search")
+        @Operation(summary = "장소 검색 (Google Places API)")
+        public CompletableFuture<ResponseEntity<PlaceSearchResponseDto>> searchPlaces(
+                        @RequestParam String query,
+                        @RequestParam(required = false) String location,
+                        @RequestParam(required = false) String type,
+                        @RequestParam(required = false) String nextPageToken) {
+                return placeService.searchPlaces(query, location, type, nextPageToken)
+                                .thenApply(ResponseEntity::ok);
+        }
 
-    @GetMapping("/{placeId}/brief")
-    @Operation(summary = "장소 간략 정보 조회 (Google Places API)")
-    public CompletableFuture<ResponseEntity<?>> getPlaceBriefDetails(
-            @PathVariable String placeId,
-            @RequestParam Long projectId) {
-        return placeService.getPlaceBriefDetails(placeId, projectId)
-                .thenApply(ResponseEntity::ok);
-    }
+        @GetMapping("/{placeId}/brief")
+        @Operation(summary = "장소 간략 정보 조회 (Google Places API)")
+        public CompletableFuture<ResponseEntity<?>> getPlaceBriefDetails(
+                        @PathVariable String placeId,
+                        @RequestParam Long projectId) {
+                return placeService.getPlaceBriefDetails(placeId, projectId)
+                                .thenApply(ResponseEntity::ok);
+        }
 
-    @GetMapping("/{placeId}/details")
-    @Operation(summary = "장소 상세 정보 조회 (Google Places API)")
-    public CompletableFuture<ResponseEntity<?>> getPlaceFullDetails(
-            @PathVariable String placeId,
-            @RequestParam Long projectId) {
-        return placeService.getPlaceFullDetails(placeId, projectId)
-                .thenApply(ResponseEntity::ok);
-    }
+        @GetMapping("/{placeId}/details")
+        @Operation(summary = "장소 상세 정보 조회 (Google Places API)")
+        public CompletableFuture<ResponseEntity<?>> getPlaceFullDetails(
+                        @PathVariable String placeId,
+                        @RequestParam Long projectId) {
+                return placeService.getPlaceFullDetails(placeId, projectId)
+                                .thenApply(ResponseEntity::ok);
+        }
 
-    @GetMapping("/recommendations/solo-dining")
-    @Operation(summary = "혼밥하기 좋은 음식점 추천 (Google Places API)")
-    public CompletableFuture<ResponseEntity<?>> recommendSoloDining(
-            @RequestParam double latitude,
-            @RequestParam double longitude,
-            @RequestParam(defaultValue = "5000") int radius) {
-        return placeService.recommendSoloDining(latitude, longitude, radius)
-                .thenApply(ResponseEntity::ok);
-    }
+        @GetMapping("/recommendations/solo-dining")
+        @Operation(summary = "혼밥하기 좋은 음식점 추천 (Google Places API)")
+        public CompletableFuture<ResponseEntity<?>> recommendSoloDining(
+                        @RequestParam double latitude,
+                        @RequestParam double longitude,
+                        @RequestParam(defaultValue = "5000") int radius) {
+                return placeService.recommendSoloDining(latitude, longitude, radius)
+                                .thenApply(ResponseEntity::ok);
+        }
 }

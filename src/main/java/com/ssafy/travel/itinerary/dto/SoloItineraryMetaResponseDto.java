@@ -22,4 +22,3 @@ public class SoloItineraryMetaResponseDto implements ItineraryMetaResponseDto {
     private String recommendation; // Added recommendation field
     private Map<String, String> scoreJustification;
 }
-

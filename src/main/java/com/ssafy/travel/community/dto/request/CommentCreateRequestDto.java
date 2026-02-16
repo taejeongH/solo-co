@@ -3,7 +3,7 @@ package com.ssafy.travel.community.dto.request;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter 
+@Getter
 @Setter
 public class CommentCreateRequestDto {
     private String content;

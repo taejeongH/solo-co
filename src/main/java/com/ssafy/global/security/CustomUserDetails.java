@@ -13,10 +13,10 @@ import lombok.Getter;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    private final Long userId;     // DB PK
+    private final Long userId; // DB PK
     private final String username; // 로그인 아이디
     private final String password; // 암호화된 비번
-    private final String email;    // 추가 정보
+    private final String email; // 추가 정보
 
     public CustomUserDetails(User user) {
         this.userId = user.getUserId();
@@ -27,7 +27,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // role 처리 필요하면 여기 추가
+        return Collections.emptyList();
     }
 
     @Override
@@ -41,14 +41,22 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return true;
+    }
 }

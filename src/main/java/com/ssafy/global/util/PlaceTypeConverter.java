@@ -11,8 +11,7 @@ public class PlaceTypeConverter {
             "movie_theater", "museum", "art_gallery", "library",
             "tourist_attraction", "park", "subway_station", "bus_station", "airport",
             "department_store", "shopping_mall", "bar",
-            "point_of_interest", "establishment"
-    );
+            "point_of_interest", "establishment");
 
     private static final Map<String, String> typeMap = Map.ofEntries(
             Map.entry("restaurant", "음식점"),
@@ -38,8 +37,7 @@ public class PlaceTypeConverter {
             Map.entry("art_gallery", "미술관"),
             Map.entry("library", "도서관"),
             Map.entry("point_of_interest", "관심 장소"),
-            Map.entry("establishment", "시설")
-    );
+            Map.entry("establishment", "시설"));
 
     public static String translatePlaceTypeToKorean(List<String> types) {
         if (types == null || types.isEmpty()) {

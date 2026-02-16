@@ -16,8 +16,7 @@ public class PlaceDto {
     private String name;
     private String formattedAddress;
     private String formattedPhoneNumber;
-    private List<String> types; // Categories
-    private List<String> photoUrls; // Full URLs to the place photos (constructed by backend)
+    private List<String> types;
+    private List<String> photoUrls;
     private Map<String, Object> geometry;
-    // For more details, like opening_hours, website, rating, etc., would be added for detailed view
 }

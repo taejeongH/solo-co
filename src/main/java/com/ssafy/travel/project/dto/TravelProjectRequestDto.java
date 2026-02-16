@@ -6,7 +6,7 @@ import lombok.Data;
 public class TravelProjectRequestDto {
     private String title;
     private String location;
-    private String startDate;   // "yyyy-MM-dd"
+    private String startDate; // "yyyy-MM-dd"
     private String endDate;
     private String projectType; // SOLO / GROUP
 }

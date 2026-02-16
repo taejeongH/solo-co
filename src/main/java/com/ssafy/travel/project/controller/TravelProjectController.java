@@ -20,7 +20,6 @@ import com.ssafy.global.security.CustomUserDetails;
 import com.ssafy.travel.project.dto.TravelProjectDetailResponseDto;
 import com.ssafy.travel.project.dto.TravelProjectRequestDto;
 import com.ssafy.travel.project.dto.TravelProjectResponseDto;
-import com.ssafy.travel.project.service.TravelProjectInviteService;
 import com.ssafy.travel.project.service.TravelProjectService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,49 +33,45 @@ import lombok.RequiredArgsConstructor;
 public class TravelProjectController {
 
     private final TravelProjectService travelProjectService;
-    private final TravelProjectInviteService inviteService;
-    
+
     @PutMapping("/{projectId}")
     @Operation(summary = "여행 프로젝트 수정")
     public ResponseEntity<?> getPlaces(
-    		@AuthenticationPrincipal CustomUserDetails user,
-            @PathVariable Long projectId, 
-            @RequestPart TravelProjectRequestDto dto, 
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long projectId,
+            @RequestPart TravelProjectRequestDto dto,
             @RequestPart(required = false) MultipartFile thumbnail) throws IOException {
-    	Long userId = user.getUserId();
-    	
-    	TravelProjectResponseDto result = travelProjectService.updateProject(projectId, userId, dto, thumbnail);
+        Long userId = user.getUserId();
+
+        TravelProjectResponseDto result = travelProjectService.updateProject(projectId, userId, dto, thumbnail);
         return ResponseEntity.ok(result);
     }
-    
-    
-    @Operation(
-            summary = "내 여행 목록 조회",
-            description = "로그인한 사용자의 개인/그룹 여행 프로젝트 목록 조회"
-    )
+
+    @Operation(summary = "내 여행 목록 조회", description = "로그인한 사용자의 개인/그룹 여행 프로젝트 목록 조회")
     @GetMapping
-    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user, @RequestParam(required = false) String projectType) {
+    public ResponseEntity<List<TravelProjectResponseDto>> getMyProjects(@AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(required = false) String projectType) {
         Long userId = user.getUserId();
         if (projectType == null || projectType.equals("") || projectType.equals("ALL")) {
-        	projectType = null;
+            projectType = null;
         }
         List<TravelProjectResponseDto> projects = travelProjectService.getMyProjects(userId, projectType);
         return ResponseEntity.ok(projects);
     }
-    
+
     @PostMapping
     @Operation(summary = "여행 프로젝트 생성")
     public ResponseEntity<TravelProjectResponseDto> createProject(
-    		@AuthenticationPrincipal CustomUserDetails user,
-    		@RequestPart TravelProjectRequestDto dto, 
-    		@RequestPart MultipartFile thumbnail) throws IOException {
-    	Long userId = user.getUserId();
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestPart TravelProjectRequestDto dto,
+            @RequestPart MultipartFile thumbnail) throws IOException {
+        Long userId = user.getUserId();
 
         TravelProjectResponseDto result = travelProjectService.createProject(userId, dto, thumbnail);
 
         return ResponseEntity.status(201).body(result);
     }
-    
+
     @DeleteMapping("/{projectId}")
     @Operation(summary = "여행 프로젝트 삭제")
     public ResponseEntity<?> deleteProject(
@@ -86,17 +81,16 @@ public class TravelProjectController {
         travelProjectService.deleteProject(projectId, user.getUserId());
         return ResponseEntity.ok("프로젝트가 삭제되었습니다.");
     }
-    
+
     @Operation(summary = "여행 목록 상세 조회")
     @GetMapping("/{projectId}")
     public ResponseEntity<TravelProjectDetailResponseDto> getProjectDetail(
-    		@PathVariable Long projectId,
-    		@AuthenticationPrincipal CustomUserDetails user) {
+            @PathVariable Long projectId,
+            @AuthenticationPrincipal CustomUserDetails user) {
         Long userId = user.getUserId();
-        
+
         TravelProjectDetailResponseDto projects = travelProjectService.getProjectDetail(userId, projectId);
         return ResponseEntity.ok(projects);
     }
-
 
 }

@@ -11,10 +11,16 @@ import com.ssafy.travel.project.entity.TravelProjectMember;
 @Mapper
 public interface TravelProjectMemberMapper {
 	List<TravelProjectMemberResponseDto> findMembers(Long projectId);
+
 	TravelProjectMember findOne(@Param("projectId") Long projectId, @Param("userId") Long userId);
+
 	void deleteMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
+
 	void insertMember(@Param("projectId") Long projectId, @Param("userId") Long userId, @Param("role") String role);
+
 	boolean isMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
+
 	int countMembersByProjectId(@Param("projectId") Long projectId);
+
 	void deleteAllByProjectId(Long projectId);
 }

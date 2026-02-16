@@ -6,12 +6,9 @@ import lombok.Data;
 
 @Data
 public class TravelProjectMember {
-
-    private Long memberId;      // PK
-    private Long projectId;     // 프로젝트 ID
-    private Long userId;        // 유저 ID
-
-    private String role;        // OWNER / MEMBER
-
+    private Long memberId; // PK
+    private Long projectId; // 프로젝트 ID
+    private Long userId; // 유저 ID
+    private String role; // OWNER / MEMBER
     private LocalDateTime createdAt;
 }

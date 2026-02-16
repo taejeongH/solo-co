@@ -5,7 +5,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisConnectionTestRunner implements CommandLineRunner {
@@ -16,6 +18,6 @@ public class RedisConnectionTestRunner implements CommandLineRunner {
     public void run(String... args) {
         redisTemplate.opsForValue().set("redis-test", "ok");
         String value = redisTemplate.opsForValue().get("redis-test");
-        System.out.println("🔥 Redis test value = " + value);
+        log.info("Redis test connection success: {}", value);
     }
 }

@@ -1,6 +1,5 @@
 package com.ssafy.travel.project.dto;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -12,6 +11,6 @@ public class TravelProjectResponseDto {
     private String startDate;
     private String endDate;
     private String thumbnail;
-    private String status; //여행 상태
+    private String status; // 여행 상태
     private int memberCount;
 }

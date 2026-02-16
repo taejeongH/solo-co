@@ -2,10 +2,8 @@ package com.ssafy.travel.project.service;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;

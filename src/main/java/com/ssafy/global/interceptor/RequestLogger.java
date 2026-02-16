@@ -11,7 +11,7 @@ public class RequestLogger implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        System.out.println("🌐 [REQUEST] " + request.getMethod() + " " + request.getRequestURI());
+        System.out.println("[REQUEST] " + request.getMethod() + " " + request.getRequestURI());
         return true;
     }
 }

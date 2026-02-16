@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 public class TravelProjectDetailResponseDto {
-	TravelProjectResponseDto project;
+    TravelProjectResponseDto project;
     List<TravelProjectMemberResponseDto> members;
 }

@@ -19,7 +19,8 @@ public class JsonTypeHandler extends BaseTypeHandler<Map<String, String>> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, Map<String, String> parameter, JdbcType jdbcType) throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, Map<String, String> parameter, JdbcType jdbcType)
+            throws SQLException {
         try {
             ps.setString(i, objectMapper.writeValueAsString(parameter));
         } catch (JsonProcessingException e) {
@@ -47,7 +48,8 @@ public class JsonTypeHandler extends BaseTypeHandler<Map<String, String>> {
 
     private Map<String, String> toMap(String json) throws SQLException {
         try {
-            return objectMapper.readValue(json, new TypeReference<Map<String, String>>() {});
+            return objectMapper.readValue(json, new TypeReference<Map<String, String>>() {
+            });
         } catch (JsonProcessingException e) {
             throw new SQLException("Error parsing JSON string to Map", e);
         }

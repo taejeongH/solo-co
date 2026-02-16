@@ -46,14 +46,14 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("tokens", tokenDto);
         result.put("user", user);
 
         return result;
     }
-    
+
     @Transactional
     public void signup(SignupRequestDto dto) {
         // username 중복 체크
@@ -90,11 +90,11 @@ public class AuthService {
         }
 
         // 3. 새로운 Access Token 생성
-        String newAccessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getUsername(), user.getEmail());
+        String newAccessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getUsername(),
+                user.getEmail());
 
         return TokenDto.builder()
                 .accessToken(newAccessToken)
                 .build();
     }
 }
-

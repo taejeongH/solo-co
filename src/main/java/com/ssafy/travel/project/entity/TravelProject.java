@@ -6,7 +6,7 @@ import lombok.Data;
 public class TravelProject {
     private Long projectId;
     private Long ownerId;
-    private String projectType;   // PERSONAL / GROUP
+    private String projectType; // PERSONAL / GROUP
     private String title;
     private String location;
     private String startDate;

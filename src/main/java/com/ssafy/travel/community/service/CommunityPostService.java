@@ -216,7 +216,7 @@ public class CommunityPostService {
             throw new CustomException(ErrorCode.POST_NOT_FOUND);
         }
 
-        // 2️⃣ 게시글 기본 정보 업데이트
+        // 게시글 기본 정보 업데이트
         postMapper.updatePostBasic(postId, request.getTitle(), request.getContent());
 
         // 이미지 전체 교체
@@ -239,7 +239,7 @@ public class CommunityPostService {
             }
         }
 
-        // 5️⃣ 투표 전체 교체 (없으면 삭제)
+        // 투표 전체 교체 (없으면 삭제)
         updateVote(postId, request.getVote());
     }
 

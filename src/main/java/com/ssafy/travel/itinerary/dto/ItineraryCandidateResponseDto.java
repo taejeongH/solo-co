@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ItineraryCandidateResponseDto {
 
-	private int routeType; 
+    private int routeType;
     private List<ItineraryDayDto> days;
     private String reason;
 
@@ -22,7 +22,7 @@ public class ItineraryCandidateResponseDto {
         private int day;
         private List<ItineraryPlaceDto> places;
     }
-    
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Data
     public static class ItineraryPlaceDto {

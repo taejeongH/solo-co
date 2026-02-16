@@ -19,46 +19,47 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CommunityCommentService {
-	
-	private final TravelProjectMapper projectMapper;
+
+    private final TravelProjectMapper projectMapper;
     private final ProjectPostMapper postMapper;
     private final ProjectPostCommentMapper postCommentMapper;
     private final TravelProjectMemberMapper memberMapper;
-    
+
     void checkPermission(Long projectId, Long userId, Long postId) {
-    	//project가 존재한지 확인
+        // project가 존재한지 확인
         TravelProject project = projectMapper.findById(projectId);
         if (project == null) {
-        	throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
-        
-        //멤버 권한 체크
+
+        // 멤버 권한 체크
         if (!memberMapper.isMember(projectId, userId)) {
-        	throw new CustomException(ErrorCode.FORBIDDEN);
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
-        
-        //게시글 존재 여부 확인
+
+        // 게시글 존재 여부 확인
         if (postMapper.findPostAuthorId(postId) == null) {
-        	throw new CustomException(ErrorCode.POST_NOT_FOUND);
+            throw new CustomException(ErrorCode.POST_NOT_FOUND);
         }
     }
-    
+
     @Transactional
     public ProjectPostComment createComment(Long projectId, Long postId, Long userId, CommentCreateRequestDto req) {
-    	checkPermission(projectId, userId, postId);
-        
-        //댓글 등록
+        checkPermission(projectId, userId, postId);
+
+        // 댓글 등록
         postCommentMapper.insertComment(postId, userId, req.getContent());
 
-        //방금 삽입된 commentId 조회
+        // 방금 삽입된 commentId 조회
         Long commentId = postCommentMapper.getLastInsertId();
 
-        //작성한 댓글 조회해서 반환
+        // 작성한 댓글 조회해서 반환
         return postCommentMapper.findCommentByCommentId(commentId);
     }
-    
+
     @Transactional
-    public ProjectPostComment updateComment(Long projectId, Long postId, Long commentId, Long userId, CommentUpdateRequestDto req) {
+    public ProjectPostComment updateComment(Long projectId, Long postId, Long commentId, Long userId,
+            CommentUpdateRequestDto req) {
         // 0. 프로젝트, 게시글, 멤버십 권한 확인
         checkPermission(projectId, userId, postId);
 
@@ -79,7 +80,7 @@ public class CommunityCommentService {
         // 4. 수정된 댓글 정보 반환
         return postCommentMapper.findCommentByCommentId(commentId);
     }
-    
+
     @Transactional
     public void deleteComment(Long projectId, Long postId, Long commentId, Long userId) {
         // 0. 프로젝트, 게시글, 멤버십 권한 확인
