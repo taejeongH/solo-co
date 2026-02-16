@@ -3,6 +3,7 @@ package com.ssafy.travel.place.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import com.ssafy.global.exception.CustomException;
 import com.ssafy.global.exception.ErrorCode;
@@ -50,53 +51,66 @@ public class TravelProjectPlaceService {
         }
     }
 
-    public TravelProjectPlace addPlace(Long projectId, String googlePlaceId, Long userId, String status)
-            throws IOException {
+    public CompletableFuture<TravelProjectPlace> addPlace(Long projectId, String googlePlaceId, Long userId,
+            String status) {
         // 0. 권한 확인
-        checkPermission(projectId, userId);
+        try {
+            checkPermission(projectId, userId);
+        } catch (CustomException e) {
+            return CompletableFuture.failedFuture(e);
+        }
 
         // 0.5 중복 확인
         if (placeMapper.isPlaceExist(projectId, googlePlaceId)) {
-            throw new CustomException(ErrorCode.PLACE_ALREADY_EXISTS);
+            return CompletableFuture.failedFuture(new CustomException(ErrorCode.PLACE_ALREADY_EXISTS));
         }
 
         // 1. googlePlaceId로 장소 정보 조회 (캐시 또는 API)
-        PlaceDto placeDetails = (PlaceDto) placeService.getPlaceBriefDetails(googlePlaceId, -1L);
+        return placeService.getPlaceBriefDetails(googlePlaceId, -1L)
+                .thenApply(detailsObj -> {
+                    PlaceDto placeDetails = (PlaceDto) detailsObj;
 
-        // 2. DTO → Entity 변환
-        TravelProjectPlace place = new TravelProjectPlace();
-        place.setProjectId(projectId);
-        place.setGooglePlaceId(googlePlaceId);
-        place.setPlaceName(placeDetails.getName());
-        place.setPlaceAddress(placeDetails.getFormattedAddress());
-        if (status != null)
-            place.setStatus(status);
+                    // 2. DTO → Entity 변환
+                    TravelProjectPlace place = new TravelProjectPlace();
+                    place.setProjectId(projectId);
+                    place.setGooglePlaceId(googlePlaceId);
+                    place.setPlaceName(placeDetails.getName());
+                    place.setPlaceAddress(placeDetails.getFormattedAddress());
+                    if (status != null)
+                        place.setStatus(status);
 
-        if (placeDetails.getTypes() != null && !placeDetails.getTypes().isEmpty()) {
-            place.setPlaceType(PlaceTypeConverter.translatePlaceTypeToKorean(placeDetails.getTypes()));
-        }
+                    if (placeDetails.getTypes() != null && !placeDetails.getTypes().isEmpty()) {
+                        place.setPlaceType(PlaceTypeConverter.translatePlaceTypeToKorean(placeDetails.getTypes()));
+                    }
 
-        if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
-            String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0), "place-thumbnail");
-            place.setThumbnail(s3Url);
-        }
+                    if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
+                        // uploadFromUrl is likely blocking, consider making it async if it involves
+                        // network
+                        try {
+                            String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0),
+                                    "place-thumbnail");
+                            place.setThumbnail(s3Url);
+                        } catch (IOException e) {
+                            throw new CustomException(ErrorCode.INTERNAL_ERROR, "Failed to upload photo to S3");
+                        }
+                    }
 
-        Map<String, Object> geometry = placeDetails.getGeometry();
-        if (geometry != null) {
-            place.setLatitude((Double) geometry.get("lat"));
-            place.setLongitude((Double) geometry.get("lng"));
-        }
+                    Map<String, Object> geometry = placeDetails.getGeometry();
+                    if (geometry != null) {
+                        place.setLatitude((Double) geometry.get("lat"));
+                        place.setLongitude((Double) geometry.get("lng"));
+                    }
 
-        // 3. DB 저장
-        placeMapper.insertPlace(place);
+                    // 3. DB 저장
+                    placeMapper.insertPlace(place);
 
-        // 4. 알림 전송 (TEMP인 경우 제외 - AI 생성 중에는 너무 많은 알림이 갈 수 있으므로 CONFIRMED인 경우만 권장하지만,
-        // 실시간 편집을 위해 일단 보냄)
-        if ("CONFIRMED".equals(status)) {
-            eventService.notifyProjectUpdate(projectId, "PLACE_ADDED");
-        }
+                    // 4. 알림 전송
+                    if ("CONFIRMED".equals(status)) {
+                        eventService.notifyProjectUpdate(projectId, "PLACE_ADDED");
+                    }
 
-        return place;
+                    return place;
+                });
     }
 
     public void deletePlace(Long projectId, Long placeId, Long userId) {

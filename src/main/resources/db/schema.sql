@@ -231,7 +231,8 @@ CREATE TABLE project_post_vote_result (
         ON DELETE CASCADE,
     FOREIGN KEY (option_id)
         REFERENCES project_post_vote_option(option_id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    UNIQUE KEY uk_vote_user (vote_id, user_id)
 );
 
 -- =========================

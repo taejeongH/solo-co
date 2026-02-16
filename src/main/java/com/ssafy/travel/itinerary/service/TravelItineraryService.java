@@ -301,13 +301,14 @@ public class TravelItineraryService {
             Long userId)
             throws IOException {
         String location = (lat != null && lng != null) ? (lat + "," + lng) : null;
-        List<PlaceSearchItemDto> places = googlePlaceService.searchPlaces(placeName, location, null, null).getPlaces();
+        List<PlaceSearchItemDto> places = googlePlaceService.searchPlaces(placeName, location, null, null).join()
+                .getPlaces();
         if (places.isEmpty()) {
             throw new CustomException(ErrorCode.PLACE_NOT_FOUND,
                     "Google 지도에서 '" + placeName + "'에 대한 검색 결과를 찾을 수 없습니다.");
         }
         String googlePlaceId = places.get(0).getPlaceId();
-        TravelProjectPlace place = projectPlaceService.addPlace(projectId, googlePlaceId, userId, "TEMP");
+        TravelProjectPlace place = projectPlaceService.addPlace(projectId, googlePlaceId, userId, "TEMP").join();
         return place;
     }
 
@@ -425,7 +426,7 @@ public class TravelItineraryService {
                     } else {
                         // Add the new place to the project
                         TravelProjectPlace newPlace = projectPlaceService.addPlace(projectId,
-                                placeDto.getGooglePlaceId(), userId, "CONFIRMED");
+                                placeDto.getGooglePlaceId(), userId, "CONFIRMED").join();
                         placeId = newPlace.getPlaceId();
                     }
                 }

@@ -39,11 +39,11 @@ public class CommunityVoteService {
         if (project == null) {
             throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
-        
+
         if (!memberMapper.isMember(projectId, userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-        
+
         if (postMapper.findPostAuthorId(postId) == null) {
             throw new CustomException(ErrorCode.POST_NOT_FOUND);
         }
@@ -69,42 +69,46 @@ public class CommunityVoteService {
         }
 
         // 4. 투표 결과 저장
-        voteResultMapper.insertVoteResult(voteId, userId, optionId);
+        try {
+            voteResultMapper.insertVoteResult(voteId, userId, optionId);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            throw new CustomException(ErrorCode.VOTE_ALREADY_EXISTS);
+        }
     }
-    
+
     public VoteResultDto getVoteResult(Long projectId, Long postId, Long userId) {
-    	
+
         checkPermission(projectId, userId, postId);
-        
+
         // 1. 투표 정보 가져오기
         ProjectPostVote vote = voteMapper.findVoteEntityByPostId(postId);
         if (vote == null) {
             throw new CustomException(ErrorCode.VOTE_NOT_FOUND);
         }
         Long voteId = vote.getVoteId();
-        
+
         // 2. 전체 투표 수 계산
         int totalVotes = voteResultMapper.countTotalVotes(voteId);
 
         // 3. 각 옵션별 투표 수 계산
         List<VoteOptionResultDto> optionResults = voteOptionMapper.findOptionsByVoteId(voteId).stream()
-            .map((ProjectPostVoteOption option) -> {
-                int voteCount = voteResultMapper.countVotesByOption(option.getOptionId());
-                return VoteOptionResultDto.builder()
-                    .optionId(option.getOptionId())
-                    .content(option.getOptionText())
-                    .voteCount(voteCount)
-                    .build();
-            })
-            .collect(Collectors.toList());
+                .map((ProjectPostVoteOption option) -> {
+                    int voteCount = voteResultMapper.countVotesByOption(option.getOptionId());
+                    return VoteOptionResultDto.builder()
+                            .optionId(option.getOptionId())
+                            .content(option.getOptionText())
+                            .voteCount(voteCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
 
         // 4. 결과 DTO 생성
         return VoteResultDto.builder()
-            .totalVotes(totalVotes)
-            .options(optionResults)
-            .build();
+                .totalVotes(totalVotes)
+                .options(optionResults)
+                .build();
     }
-    
+
     @Transactional
     public void cancelVote(Long projectId, Long postId, Long userId) {
         // 1. 권한 확인
@@ -124,4 +128,3 @@ public class CommunityVoteService {
         }
     }
 }
-
