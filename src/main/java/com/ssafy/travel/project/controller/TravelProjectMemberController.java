@@ -25,9 +25,9 @@ public class TravelProjectMemberController {
     @GetMapping
     @Operation(summary = "여행 프로젝트 멤버 조회", security = @SecurityRequirement(name = "JWT Auth"))
     public ResponseEntity<?> getMembers(
-    		@AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long projectId) {
-    	
+
         return ResponseEntity.ok(memberService.getMembers(projectId, user.getUserId()));
     }
 

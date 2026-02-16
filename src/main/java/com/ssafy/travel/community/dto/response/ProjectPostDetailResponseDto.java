@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter 
-@Setter 
+@Getter
+@Setter
 @NoArgsConstructor
 public class ProjectPostDetailResponseDto {
     private Long postId;
@@ -17,7 +17,7 @@ public class ProjectPostDetailResponseDto {
     private Long userId;
     private String userName;
     private String userProfileImage;
-    
+
     private String createdAt;
 
     private List<String> images;

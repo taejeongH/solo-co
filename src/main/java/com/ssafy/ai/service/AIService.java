@@ -60,7 +60,7 @@ public class AIService {
                     .entity(outputConverter);
 
         } catch (Exception e) {
-            throw new RuntimeException("Solo place analysis AI generation failed", e);
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "혼자 여행 장소 분석 AI 생성에 실패했습니다.");
         }
     }
 
@@ -79,7 +79,7 @@ public class AIService {
                     .entity(outputConverter);
 
         } catch (Exception e) {
-            throw new RuntimeException("Group itinerary AI generation failed", e);
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "그룹 여행 일정 AI 생성에 실패했습니다.");
         }
     }
 
@@ -98,7 +98,7 @@ public class AIService {
                     .entity(outputConverter);
 
         } catch (Exception e) {
-            throw new RuntimeException("Solo itinerary AI generation failed", e);
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "혼자 여행 일정 AI 생성에 실패했습니다.");
         }
     }
 
@@ -115,7 +115,7 @@ public class AIService {
                     .call()
                     .entity(outputConverter);
         } catch (Exception e) {
-            throw new RuntimeException("Solo itinerary refinement failed", e);
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "혼자 여행 일정 고도화에 실패했습니다.");
         }
     }
 
@@ -132,7 +132,7 @@ public class AIService {
                     .call()
                     .entity(outputConverter);
         } catch (Exception e) {
-            throw new RuntimeException("Group itinerary refinement failed", e);
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "그룹 여행 일정 고도화에 실패했습니다.");
         }
     }
 

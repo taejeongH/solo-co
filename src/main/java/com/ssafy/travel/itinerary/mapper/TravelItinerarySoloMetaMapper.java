@@ -8,13 +8,12 @@ import com.ssafy.travel.itinerary.dto.SoloItineraryMetaResponseDto;
 
 @Mapper
 public interface TravelItinerarySoloMetaMapper {
-	
-	void deleteByProjectId(@Param("projectId") Long projectId);
+
+    void deleteByProjectId(@Param("projectId") Long projectId);
 
     void insertSoloMeta(
-        @Param("projectId") Long projectId,
-        @Param("solo") SoloItineraryCandidateResponseDto solo
-    );
+            @Param("projectId") Long projectId,
+            @Param("solo") SoloItineraryCandidateResponseDto solo);
 
     SoloItineraryMetaResponseDto findMetaByProjectId(@Param("projectId") Long projectId);
 }

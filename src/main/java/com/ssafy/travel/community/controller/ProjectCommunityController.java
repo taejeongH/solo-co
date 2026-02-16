@@ -37,86 +37,77 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/travels/{projectId}/posts")
 @RequiredArgsConstructor
 public class ProjectCommunityController {
-	
-	private final CommunityPostService postService;
-	private final CommunityCommentService commentService;
-	private final CommunityVoteService voteService;
-	
-	@PostMapping
+
+    private final CommunityPostService postService;
+    private final CommunityCommentService commentService;
+    private final CommunityVoteService voteService;
+
+    @PostMapping
     @Operation(summary = "커뮤니티 게시글 작성")
-	public ResponseEntity<?> createPost(
-	        @PathVariable Long projectId,
-	        @AuthenticationPrincipal CustomUserDetails user,
-	        @RequestPart CreatePostRequestDto dto,         // JSON
-	        @RequestPart(value = "images", required = false) List<MultipartFile> images // 파일
-	) throws IOException {
-	    Long postId = postService.createPost(projectId, user.getUserId(), dto, images);
-	    return ResponseEntity.ok(
-	    	    Map.of(
-	    	        "message", "게시글 생성 완료",
-	    	        "postId", postId
-	    	    )
-	    	);
-	}
-	
+    public ResponseEntity<?> createPost(
+            @PathVariable Long projectId,
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestPart CreatePostRequestDto dto, // JSON
+            @RequestPart(value = "images", required = false) List<MultipartFile> images // 파일
+    ) throws IOException {
+        Long postId = postService.createPost(projectId, user.getUserId(), dto, images);
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "게시글 생성 완료",
+                        "postId", postId));
+    }
+
     @GetMapping
     @Operation(summary = "커뮤니티 게시글 목록 조회")
     public ResponseEntity<?> getPostList(
-    		@AuthenticationPrincipal CustomUserDetails user, 
-    		@PathVariable Long projectId,
-    		@RequestParam(required = false) String query
-    		) {
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long projectId,
+            @RequestParam(required = false) String query) {
         return ResponseEntity.ok(postService.getPostList(projectId, user.getUserId(), query));
     }
-    
-    
+
     @GetMapping("/{postId}")
     @Operation(summary = "커뮤니티 게시글 상세 조회")
     public ResponseEntity<?> getPostDetail(
-    		@PathVariable Long projectId,
+            @PathVariable Long projectId,
             @PathVariable Long postId,
-            @AuthenticationPrincipal CustomUserDetails user
-    ) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         Long userId = user.getUserId();
 
         return ResponseEntity.ok(
-                postService.getPostDetail(projectId, postId, userId)
-        );
+                postService.getPostDetail(projectId, postId, userId));
     }
-    
+
     @DeleteMapping("/{postId}")
     @Operation(summary = "커뮤니티 게시글 삭제")
     public ResponseEntity<?> deletePost(
             @PathVariable Long postId,
-            @AuthenticationPrincipal CustomUserDetails user
-    ) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         Long userId = user.getUserId();
         postService.deletePost(postId, userId);
         return ResponseEntity.ok("게시글 삭제 완료");
     }
-    
+
     @PutMapping("/{postId}")
     @Operation(summary = "커뮤니티 게시글 수정")
     public ResponseEntity<?> updatePost(
-    		@PathVariable Long projectId,
+            @PathVariable Long projectId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomUserDetails user,
             @RequestPart CreatePostRequestDto dto,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images
-    ) throws IOException {
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
         postService.updatePost(projectId, postId, user.getUserId(), dto, images);
         return ResponseEntity.ok("게시글 수정 완료");
     }
-    
+
     @PostMapping("/{postId}/comments")
     @Operation(summary = "커뮤니티 댓글 작성")
     public ResponseEntity<?> createComment(
-    		@PathVariable Long projectId,
+            @PathVariable Long projectId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestBody CommentCreateRequestDto request
-    ) {
-    	ProjectPostComment created = commentService.createComment(projectId, postId, user.getUserId(), request);
+            @RequestBody CommentCreateRequestDto request) {
+        ProjectPostComment created = commentService.createComment(projectId, postId, user.getUserId(), request);
         return ResponseEntity.ok(created);
     }
 
@@ -127,9 +118,9 @@ public class ProjectCommunityController {
             @PathVariable Long postId,
             @PathVariable Long commentId,
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestBody CommentUpdateRequestDto request
-    ) {
-        ProjectPostComment updated = commentService.updateComment(projectId, postId, commentId, user.getUserId(), request);
+            @RequestBody CommentUpdateRequestDto request) {
+        ProjectPostComment updated = commentService.updateComment(projectId, postId, commentId, user.getUserId(),
+                request);
         return ResponseEntity.ok(updated);
     }
 
@@ -139,8 +130,7 @@ public class ProjectCommunityController {
             @PathVariable Long projectId,
             @PathVariable Long postId,
             @PathVariable Long commentId,
-            @AuthenticationPrincipal CustomUserDetails user
-    ) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         commentService.deleteComment(projectId, postId, commentId, user.getUserId());
         return ResponseEntity.ok("댓글이 삭제되었습니다.");
     }
@@ -151,31 +141,27 @@ public class ProjectCommunityController {
             @PathVariable Long projectId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomUserDetails user,
-            @RequestBody VoteRequestDto request
-    ) {
+            @RequestBody VoteRequestDto request) {
         voteService.castVote(projectId, postId, user.getUserId(), request.getOptionId());
         return ResponseEntity.ok("투표가 완료되었습니다.");
     }
-    
+
     @GetMapping("/{postId}/vote/result")
     @Operation(summary = "게시글 투표 결과 조회")
     public ResponseEntity<?> getVoteResult(
-    		@PathVariable Long projectId,
-    		@PathVariable Long postId,
-    		@AuthenticationPrincipal CustomUserDetails user
-    		) {
-    	return ResponseEntity.ok(voteService.getVoteResult(projectId, postId, user.getUserId()));
+            @PathVariable Long projectId,
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(voteService.getVoteResult(projectId, postId, user.getUserId()));
     }
-    
+
     @DeleteMapping("/{postId}/vote/cancel")
     @Operation(summary = "게시글 투표 취소")
     public ResponseEntity<?> cancelVote(
             @PathVariable Long projectId,
             @PathVariable Long postId,
-            @AuthenticationPrincipal CustomUserDetails user
-    ) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         voteService.cancelVote(projectId, postId, user.getUserId());
         return ResponseEntity.ok("투표가 취소되었습니다.");
     }
 }
-

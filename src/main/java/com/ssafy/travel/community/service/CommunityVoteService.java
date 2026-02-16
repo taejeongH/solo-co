@@ -56,7 +56,6 @@ public class CommunityVoteService {
 
         // 2. 투표 옵션 확인 및 voteId 가져오기
         ProjectPostVoteOption option = voteOptionMapper.findOptionById(optionId);
-        System.out.println(optionId);
         if (option == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST, "존재하지 않는 투표 항목입니다.");
         }

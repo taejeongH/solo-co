@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/api/travels/{projectId}/places")
 @RequiredArgsConstructor
@@ -58,7 +57,8 @@ public class TravelProjectPlaceController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String order) {
-        List<ProjectPlaceListResponseDto> places = placeService.getPlaces(projectId, userDetails.getUserId(), sortBy, order);
+        List<ProjectPlaceListResponseDto> places = placeService.getPlaces(projectId, userDetails.getUserId(), sortBy,
+                order);
         return ResponseEntity.ok(places);
     }
 }

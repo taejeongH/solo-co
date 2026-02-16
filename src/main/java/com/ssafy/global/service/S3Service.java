@@ -33,7 +33,7 @@ public class S3Service {
     public void validateConfig() {
         if (bucketName == null || bucketName.trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "S3 bucket name is not configured. Please check S3_BUCKET_NAME in your .env file.");
+                    "S3 버킷 이름이 설정되지 않았습니다. .env 파일의 S3_BUCKET_NAME 설정을 확인해주세요.");
         }
     }
 
@@ -94,7 +94,7 @@ public class S3Service {
         if (key == null || key.isEmpty())
             return null;
         if (key.startsWith("http"))
-            return key; // Already a full URL (legacy or external)
+            return key;
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(60))

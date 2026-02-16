@@ -8,12 +8,12 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SoloItineraryCandidateResponseDto extends ItineraryCandidateResponseDto{
-	
+public class SoloItineraryCandidateResponseDto extends ItineraryCandidateResponseDto {
+
     private String summary;
     private String recommendation;
     private SoloItineraryScoreDto soloScore;
-    
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Data
     public static class SoloItineraryScoreDto {

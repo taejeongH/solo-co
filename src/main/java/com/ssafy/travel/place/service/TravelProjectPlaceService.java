@@ -84,14 +84,12 @@ public class TravelProjectPlaceService {
                     }
 
                     if (placeDetails.getPhotoUrls() != null && !placeDetails.getPhotoUrls().isEmpty()) {
-                        // uploadFromUrl is likely blocking, consider making it async if it involves
-                        // network
                         try {
                             String s3Url = s3Service.uploadFromUrl(placeDetails.getPhotoUrls().get(0),
                                     "place-thumbnail");
                             place.setThumbnail(s3Url);
                         } catch (IOException e) {
-                            throw new CustomException(ErrorCode.INTERNAL_ERROR, "Failed to upload photo to S3");
+                            throw new CustomException(ErrorCode.INTERNAL_ERROR, "S3 사진 업로드에 실패했습니다.");
                         }
                     }
 

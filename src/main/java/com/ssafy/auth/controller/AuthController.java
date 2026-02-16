@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
-    
+
     @Value("${jwt.refresh-expiration-time}")
     private long refreshExpiration;
 
@@ -42,34 +42,34 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto) {
         Map<String, Object> result = authService.login(requestDto);
-        
+
         TokenDto tokenDto = (TokenDto) result.get("tokens");
         User user = (User) result.get("user");
 
-        // 🔥 Refresh Token을 Secure, HttpOnly 쿠키로 설정
+        // Refresh Token을 Secure, HttpOnly 쿠키로 설정
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
-            .maxAge(refreshExpiration / 1000) // 초 단위로 변경
-            .path("/")
-            .secure(true)
-            .httpOnly(true)
-            .build();
+                .maxAge(refreshExpiration / 1000) // 초 단위로 변경
+                .path("/")
+                .secure(true)
+                .httpOnly(true)
+                .build();
 
         LoginResponseDto responseDto = LoginResponseDto.builder()
-            .accessToken(tokenDto.getAccessToken())
-            .username(user.getUsername())
-            .email(user.getEmail())
-            .name(user.getName())
-            .build();
-            
+                .accessToken(tokenDto.getAccessToken())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .name(user.getName())
+                .build();
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(responseDto);
     }
-    
+
     @Operation(summary = "회원가입", description = "새로운 사용자 계정 생성")
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDto dto) {
-    	authService.signup(dto);
+        authService.signup(dto);
         return ResponseEntity.ok("회원가입 성공");
     }
 
@@ -89,9 +89,9 @@ public class AuthController {
 
         // 2. 클라이언트의 쿠키를 삭제하기 위해 Max-Age=0인 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("refreshToken", null)
-            .maxAge(0)
-            .path("/")
-            .build();
+                .maxAge(0)
+                .path("/")
+                .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

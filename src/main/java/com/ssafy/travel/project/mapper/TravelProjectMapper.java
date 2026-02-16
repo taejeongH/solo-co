@@ -10,9 +10,13 @@ import com.ssafy.travel.project.entity.TravelProject;
 @Mapper
 public interface TravelProjectMapper {
 
-	TravelProject findById(@Param("projectId") Long projectId);
+    TravelProject findById(@Param("projectId") Long projectId);
+
     List<TravelProject> findProjectsByUserIdAndType(Long userId, @Param("projectType") String projectType);
+
     void createProject(TravelProject project);
+
     void update(TravelProject project);
+
     void delete(Long projectId);
 }

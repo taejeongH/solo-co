@@ -8,9 +8,10 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ProjectPostImageMapper {
 	void insertImage(@Param("postId") Long postId,
-            @Param("imageUrl") String imageUrl,
-            @Param("sortOrder") int sortOrder);
-	
+			@Param("imageUrl") String imageUrl,
+			@Param("sortOrder") int sortOrder);
+
 	List<String> findImagesByPostId(@Param("postId") Long postId);
+
 	int deleteImagesByPostId(@Param("postId") Long postId);
 }

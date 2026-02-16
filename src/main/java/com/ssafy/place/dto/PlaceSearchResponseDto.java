@@ -13,5 +13,5 @@ import lombok.ToString;
 @ToString
 public class PlaceSearchResponseDto {
     private List<PlaceSearchItemDto> places;
-    private String nextPageToken; // For pagination
+    private String nextPageToken;
 }

@@ -11,7 +11,10 @@ import com.ssafy.travel.community.entity.ProjectPostVoteOption;
 @Mapper
 public interface ProjectPostVoteOptionMapper {
     List<VoteOptionResponseDto> findVoteOptions(@Param("voteId") Long voteId);
+
     ProjectPostVoteOption findOptionById(@Param("optionId") Long optionId);
+
     List<ProjectPostVoteOption> findOptionsByVoteId(@Param("voteId") Long voteId);
+
     int deleteOptionsByVoteId(@Param("voteId") Long voteId);
 }

@@ -25,22 +25,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(code.getStatus()).body(response);
     }
 
-    // 예상하지 못한 모든 오류 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
-
-        e.printStackTrace(); // 개발 단계에서만
-
         ErrorCode code = ErrorCode.INTERNAL_ERROR;
 
         ErrorResponse response = ErrorResponse.builder()
                 .status(code.getStatus())
                 .errorCode(code.getErrorCode())
                 .message(code.getMessage())
-                .detail(e.getMessage()) // 어떤 예외였는지 확인
+                .detail(e.getMessage())
                 .build();
 
         return ResponseEntity.status(code.getStatus()).body(response);
     }
 }
-	

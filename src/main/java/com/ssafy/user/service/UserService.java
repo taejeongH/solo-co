@@ -71,7 +71,7 @@ public class UserService {
         }
 
         UserInfoResponseDto dto = new UserInfoResponseDto();
-        dto.setId(user.getUsername()); // 예시에서 id = username
+        dto.setId(user.getUsername());
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setProfileImage(s3service.generatePresignedUrl(user.getProfileImage()));

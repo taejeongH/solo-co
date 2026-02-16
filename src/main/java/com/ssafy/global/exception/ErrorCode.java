@@ -33,7 +33,7 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND(404, "4043", "존재하지 않는 댓글입니다."),
     VOTE_NOT_FOUND(404, "4044", "존재하지 않는 투표입니다."),
     PLACE_NOT_FOUND(404, "4045", "존재하지 않는 장소입니다."),
-    
+
     // 409 Conflict
     USERNAME_ALREADY_EXISTS(409, "4090", "이미 존재하는 사용자명입니다."),
     VOTE_ALREADY_EXISTS(409, "4091", "이미 해당 투표에 참여했습니다."),

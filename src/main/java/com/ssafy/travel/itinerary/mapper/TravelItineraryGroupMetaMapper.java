@@ -8,12 +8,11 @@ import com.ssafy.travel.itinerary.dto.GroupItineraryMetaResponseDto;
 
 @Mapper
 public interface TravelItineraryGroupMetaMapper {
-	void deleteByProjectId(@Param("projectId") Long projectId);
+    void deleteByProjectId(@Param("projectId") Long projectId);
 
     void insertGroupMeta(
-        @Param("projectId") Long projectId,
-        @Param("group") GroupItineraryCandidateResponseDto group
-    );
+            @Param("projectId") Long projectId,
+            @Param("group") GroupItineraryCandidateResponseDto group);
 
     GroupItineraryMetaResponseDto findMetaByProjectId(@Param("projectId") Long projectId);
 }

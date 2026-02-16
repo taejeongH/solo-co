@@ -17,13 +17,13 @@ public class PlaceDetailDto {
     private String formattedPhoneNumber;
     private List<String> types;
     private String website;
-    private String url; // Google Maps URL
+    private String url;
     private double rating;
     private int userRatingsTotal;
     private List<OpeningHoursDto> openingHours;
     private List<ReviewDto> reviews;
-    private List<String> photoUrls; // All photo references
-    private Map<String, Object> geometry; // Contains location (lat, lng)
+    private List<String> photoUrls;
+    private Map<String, Object> geometry;
     private String businessStatus;
 
     @Getter
